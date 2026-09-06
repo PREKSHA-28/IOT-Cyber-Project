@@ -1,0 +1,12 @@
+# Dataset files
+data/
+
+# Large trained model files
+models/*.joblib
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual environments
+.venv/
