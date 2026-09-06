@@ -1,0 +1,2 @@
+samples_processed,confidence_threshold,local_count,local_percentage,rag_count,rag_invocation_percentage,elapsed_seconds,throughput_samples_per_second,psutil_available,cpu_percent,starting_memory_mb,ending_memory_mb,memory_change_mb
+20000,0.7,16059,80.295,3941,19.705000000000002,0.8936168000072939,22380.957922721187,True,101.8,72.94140625,78.140625,5.19921875
