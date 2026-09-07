@@ -1,0 +1,2 @@
+sample_index,phase,actual_label,prediction,confidence,calibrated_attack_probability,routing_decision,routing_reason
+10048,EMERGING,DNS_SPOOFING,BENIGN,0.5433962264150943,0.45660377358490567,RAG,LOW_CONFIDENCE_AND_DRIFT

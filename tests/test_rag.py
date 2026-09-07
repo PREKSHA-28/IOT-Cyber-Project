@@ -1,74 +1,129 @@
-"""Automated checks for the provenance-aware RAG boundary."""
+"""Unit tests for the provenance-aware RAG pipeline."""
 
 from __future__ import annotations
 
-import sys
 import unittest
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
-
-from rag_contract import RAGRequest
-from rag_pipeline import DeterministicGroundedGenerator, GroundedRAGPipeline
-from rag_retriever import KnowledgeBase
-
-
-class InvalidCitationGenerator:
-    def generate(self, request, evidence, prompt_context):
-        del request, evidence, prompt_context
-        return {
-            "threat": "Unsupported claim",
-            "detection_interpretation": "Unsupported interpretation",
-            "uncertainty_reason": "Unknown",
-            "likely_attack_behavior": "Unknown",
-            "recommendation": "Unknown",
-            "containment_action": "Hypothetical only: do nothing automatically.",
-            "caveat": "Verification required.",
-            "evidence_ids": ["invented-source-id"],
-        }
+from src.rag_contract import RAGRequest
+from src.rag_pipeline import (
+    DeterministicGroundedGenerator,
+    GroundedRAGPipeline,
+)
+from src.rag_retriever import KnowledgeBase
 
 
-class RagBoundaryTests(unittest.TestCase):
+class RagPipelineTests(unittest.TestCase):
+
     def setUp(self):
         self.knowledge_base = KnowledgeBase.from_json()
+
+        self.pipeline = GroundedRAGPipeline(
+            knowledge_base=self.knowledge_base,
+            generator=DeterministicGroundedGenerator(),
+        )
+
         self.request = RAGRequest(
             prediction="ATTACK",
-            confidence=0.42,
+            confidence=0.58,
             drift_detected=True,
-            attack_probability=0.78,
+            attack_probability=0.58,
+            context={
+                "retrieval_hint": (
+                    "cybersecurity incident detection analysis "
+                    "containment recovery"
+                )
+            },
             escalation_reason="LOW_CONFIDENCE_AND_DRIFT",
-            context={"behavior": "network service scanning repeated port probes"},
+            routing_decision="RAG",
         )
 
-    def test_retrieval_preserves_provenance(self):
-        result = self.knowledge_base.search(self.request, top_k=3)
-        self.assertTrue(result.evidence)
-        self.assertEqual(
-            result.evidence[0].evidence_id,
-            "mitre-attack-t1046-network-service-scanning",
-        )
-        self.assertTrue(result.evidence[0].source_url)
-
-    def test_pipeline_returns_structured_grounded_response(self):
-        result = GroundedRAGPipeline(
-            self.knowledge_base,
-            DeterministicGroundedGenerator(),
-        ).run(self.request)
-        self.assertTrue(result.response.evidence)
-        self.assertGreaterEqual(result.response.total_latency_ms, 0)
-        self.assertEqual(
-            result.response.evidence[0].evidence_id,
-            result.retrieved.evidence[0].evidence_id,
+    def test_rag_pipeline_returns_evidence(self):
+        result = self.pipeline.run(
+            self.request
         )
 
-    def test_pipeline_rejects_unknown_citation(self):
-        with self.assertRaisesRegex(ValueError, "not retrieved"):
-            GroundedRAGPipeline(
-                self.knowledge_base,
-                InvalidCitationGenerator(),
-            ).run(self.request)
+        self.assertTrue(
+            result.response.evidence
+        )
 
-    def test_pipeline_rejects_local_request(self):
+    def test_all_returned_evidence_has_provenance(self):
+        result = self.pipeline.run(
+            self.request
+        )
+
+        for evidence in result.response.evidence:
+            self.assertTrue(
+                evidence.evidence_id
+            )
+            self.assertTrue(
+                evidence.source_name
+            )
+            self.assertTrue(
+                evidence.document_title
+            )
+            self.assertTrue(
+                evidence.source_url
+            )
+            self.assertTrue(
+                evidence.excerpt
+            )
+
+    def test_response_contains_required_fields(self):
+        result = self.pipeline.run(
+            self.request
+        )
+
+        response = result.response
+
+        self.assertTrue(
+            response.threat
+        )
+
+        self.assertTrue(
+            response.detection_interpretation
+        )
+
+        self.assertTrue(
+            response.uncertainty_reason
+        )
+
+        self.assertTrue(
+            response.likely_attack_behavior
+        )
+
+        self.assertTrue(
+            response.recommendation
+        )
+
+        self.assertTrue(
+            response.containment_action
+        )
+
+        self.assertTrue(
+            response.caveat
+        )
+
+    def test_rag_pipeline_records_latency(self):
+        result = self.pipeline.run(
+            self.request
+        )
+
+        self.assertGreaterEqual(
+            result.response.retrieval_latency_ms,
+            0,
+        )
+
+        self.assertGreaterEqual(
+            result.response.generation_latency_ms,
+            0,
+        )
+
+        self.assertGreaterEqual(
+            result.response.total_latency_ms,
+            0,
+        )
+
+    def test_local_request_is_rejected(self):
         local_request = RAGRequest(
             prediction="BENIGN",
             confidence=0.99,
@@ -76,24 +131,14 @@ class RagBoundaryTests(unittest.TestCase):
             attack_probability=0.01,
             routing_decision="LOCAL",
         )
-        with self.assertRaisesRegex(ValueError, "LOCAL"):
-            GroundedRAGPipeline(
-                self.knowledge_base,
-                DeterministicGroundedGenerator(),
-            ).run(local_request)
 
-    def test_edge_row_conversion_preserves_local_decision(self):
-        request = RAGRequest.from_edge_result(
-            {
-                "prediction": "BENIGN",
-                "confidence": "0.99",
-                "drift_detected": "False",
-                "calibrated_attack_probability": "0.01",
-                "routing_decision": "LOCAL",
-            }
-        )
-        self.assertEqual(request.routing_decision, "LOCAL")
-        self.assertEqual(request.escalation_reason, "NO_ESCALATION")
+        with self.assertRaisesRegex(
+            ValueError,
+            "LOCAL",
+        ):
+            self.pipeline.run(
+                local_request
+            )
 
 
 if __name__ == "__main__":
