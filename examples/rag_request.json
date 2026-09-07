@@ -1,0 +1,8 @@
+{
+  "prediction": "ATTACK",
+  "raw_probability": 0.62,
+  "calibrated_probability": 0.58,
+  "confidence": 0.58,
+  "drift_detected": true,
+  "routing_reason": "LOW_CONFIDENCE_AND_DRIFT"
+}

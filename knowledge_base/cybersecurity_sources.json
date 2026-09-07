@@ -1,0 +1,74 @@
+[
+  {
+    "document_id": "nist-ir-8259a-iot-baseline",
+    "source_name": "National Institute of Standards and Technology",
+    "document_title": "IoT Device Cybersecurity Capability Core Baseline",
+    "source_url": "https://doi.org/10.6028/NIST.IR.8259A",
+    "document_type": "standard_guidance",
+    "publication_date": "2020-05",
+    "content": "IoT device cybersecurity capabilities should support device identification, configuration, data protection, logical access control, software update, and cybersecurity state awareness. These capabilities help operators reduce exposure and maintain visibility over connected devices."
+  },
+  {
+    "document_id": "nist-sp-800-61r2-incident-response",
+    "source_name": "National Institute of Standards and Technology",
+    "document_title": "Computer Security Incident Handling Guide",
+    "source_url": "https://doi.org/10.6028/NIST.SP.800-61r2",
+    "document_type": "incident_response_guidance",
+    "publication_date": "2012-08",
+    "content": "Incident handling includes preparation, detection and analysis, containment, eradication and recovery, and post-incident activity. Containment should be selected according to the incident and business requirements, and actions should preserve evidence and support later analysis."
+  },
+  {
+    "document_id": "mitre-attack-t1046-network-service-scanning",
+    "source_name": "MITRE ATT&CK",
+    "document_title": "Network Service Scanning (T1046)",
+    "source_url": "https://attack.mitre.org/techniques/T1046/",
+    "document_type": "attack_technique",
+    "publication_date": null,
+    "content": "Adversaries may scan services on remote hosts to gather information about systems and services that are available. Network service scanning can support later targeting and should be investigated with source, destination, port, timing, and scan-pattern context."
+  },
+  {
+    "document_id": "mitre-attack-t1110-brute-force",
+    "source_name": "MITRE ATT&CK",
+    "document_title": "Brute Force (T1110)",
+    "source_url": "https://attack.mitre.org/techniques/T1110/",
+    "document_type": "attack_technique",
+    "publication_date": null,
+    "content": "Adversaries may use repeated attempts to gain access to accounts or services. Repeated failures, distributed sources, unusual authentication timing, and account targeting can be useful investigation signals. Rate limiting, strong authentication, and monitoring can reduce exposure."
+  },
+  {
+    "document_id": "owasp-command-injection",
+    "source_name": "OWASP Foundation",
+    "document_title": "Command Injection",
+    "source_url": "https://owasp.org/www-community/attacks/Command_Injection",
+    "document_type": "application_security_guidance",
+    "publication_date": null,
+    "content": "Command injection occurs when an application passes unsafe user-controlled input to an operating system command or interpreter. Recommended defenses include avoiding command construction where possible, using safe APIs, validating input, applying least privilege, and monitoring attempted exploitation."
+  },
+  {
+    "document_id": "owasp-sql-injection",
+    "source_name": "OWASP Foundation",
+    "document_title": "SQL Injection",
+    "source_url": "https://owasp.org/www-community/attacks/SQL_Injection",
+    "document_type": "application_security_guidance",
+    "publication_date": null,
+    "content": "SQL injection can occur when untrusted input is incorporated into database queries. Parameterized queries, input validation, least-privilege database accounts, and safe error handling are recommended defenses."
+  },
+  {
+    "document_id": "cisa-ddos-guidance",
+    "source_name": "Cybersecurity and Infrastructure Security Agency",
+    "document_title": "Understanding Denial-of-Service Attacks",
+    "source_url": "https://www.cisa.gov/news-events/news/understanding-denial-service-attacks",
+    "document_type": "threat_guidance",
+    "publication_date": null,
+    "content": "Denial-of-service attacks attempt to make a service unavailable by exhausting resources or bandwidth. Defensive planning can include traffic monitoring, filtering, rate limiting, resilient architecture, and coordination with service providers."
+  },
+  {
+    "document_id": "cwe-798-hardcoded-credentials",
+    "source_name": "MITRE CWE",
+    "document_title": "Use of Hard-coded Credentials (CWE-798)",
+    "source_url": "https://cwe.mitre.org/data/definitions/798.html",
+    "document_type": "weakness_guidance",
+    "publication_date": null,
+    "content": "Hard-coded credentials can enable unauthorized access when exposed or reused. Credentials should be managed securely, rotated when compromise is suspected, and protected with appropriate access controls and secrets-management practices."
+  }
+]
