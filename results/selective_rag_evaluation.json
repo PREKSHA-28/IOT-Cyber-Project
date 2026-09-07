@@ -1,0 +1,15 @@
+{
+  "total_edge_samples": 20000,
+  "local_count": 16059,
+  "selective_rag_invocation_count": 3941,
+  "selective_rag_invocation_rate": 0.19705,
+  "always_on_llm_invocation_count": 20000,
+  "avoided_llm_invocations": 16059,
+  "invocation_reduction_rate": 0.80295,
+  "benchmark_rag_sample_size": 100,
+  "benchmark_rows_with_retrievable_evidence": 100,
+  "benchmark_evidence_retrieval_rate": 1.0,
+  "benchmark_mean_retrieval_latency_ms": 0.11938699996790092,
+  "evaluation_scope": "Structured edge-routing output compared with an always-on invocation baseline.",
+  "limitation": "The finalized six-field request has no traffic-feature context; the adapter therefore uses generic incident-analysis retrieval context and does not claim a specific attack type."
+}
