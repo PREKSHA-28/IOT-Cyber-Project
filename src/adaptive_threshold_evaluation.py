@@ -37,7 +37,7 @@ THRESHOLDS = [
 # ============================================================
 
 def load_results() -> pd.DataFrame:
-    """Load Person 1's existing routing evaluation results."""
+    """Load the existing routing evaluation results."""
 
     if not INPUT_FILE.exists():
         raise FileNotFoundError(
@@ -109,12 +109,17 @@ def calculate_classification_metrics(
 
     return {
         "attack_recall_percent": attack_recall * 100,
+
         "false_positive_rate_percent": (
             false_positive_rate * 100
         ),
+
         "true_positive": true_positive,
+
         "false_negative": false_negative,
+
         "false_positive": false_positive,
+
         "true_negative": true_negative,
     }
 
@@ -150,13 +155,16 @@ def evaluate_threshold(
     total = len(df)
 
     rag_count = int(rag_mask.sum())
+
     local_count = int(local_mask.sum())
+
 
     # --------------------------------------------------------
     # Model-level classification metrics
     # --------------------------------------------------------
 
     metrics = calculate_classification_metrics(df)
+
 
     # --------------------------------------------------------
     # Actual attacks
@@ -175,6 +183,7 @@ def evaluate_threshold(
         .str.upper()
         == "ATTACK"
     )
+
 
     # --------------------------------------------------------
     # Emerging-phase analysis
@@ -213,8 +222,9 @@ def evaluate_threshold(
         emerging_actual_attack.sum()
     )
 
+
     # --------------------------------------------------------
-    # Model false negatives in emerging traffic.
+    # Model false negatives in emerging traffic
     #
     # This is a property of the ML model, NOT routing.
     # --------------------------------------------------------
@@ -226,12 +236,67 @@ def evaluate_threshold(
         )
     )
 
+
     # --------------------------------------------------------
-    # Correctly detected emerging attacks routed LOCAL.
+    # Emerging false negatives routed LOCAL
     #
-    # These are attacks the model identified, but the edge
-    # layer decided they were sufficiently confident to keep
-    # local.
+    # These are attacks the ML model MISSED and the edge
+    # routing policy also keeps local because their confidence
+    # is at or above the selected threshold.
+    # --------------------------------------------------------
+
+    emerging_false_negatives_routed_local = int(
+        np.sum(
+            emerging_actual_attack
+            & ~emerging_predicted_attack
+            & emerging_local_mask
+        )
+    )
+
+
+    # --------------------------------------------------------
+    # Emerging false negatives routed RAG
+    #
+    # These are attacks the ML model MISSED but the edge
+    # routing policy escalates because confidence is below
+    # the selected threshold.
+    #
+    # IMPORTANT:
+    # This metric measures escalation, NOT successful
+    # recovery by RAG.
+    # --------------------------------------------------------
+
+    emerging_false_negatives_routed_rag = int(
+        np.sum(
+            emerging_actual_attack
+            & ~emerging_predicted_attack
+            & emerging_rag_mask
+        )
+    )
+
+
+    # --------------------------------------------------------
+    # False-negative escalation rate
+    #
+    # Among all emerging attacks missed by the ML model,
+    # what percentage would be escalated to RAG?
+    # --------------------------------------------------------
+
+    false_negative_escalation_rate = (
+        emerging_false_negatives_routed_rag
+        / emerging_model_false_negatives
+        * 100
+        if emerging_model_false_negatives > 0
+        else 0.0
+    )
+
+
+    # --------------------------------------------------------
+    # Correctly detected emerging attacks routed LOCAL
+    #
+    # These are attacks the model identified correctly and
+    # the edge layer decided were sufficiently confident to
+    # keep local.
     # --------------------------------------------------------
 
     emerging_attacks_routed_local = int(
@@ -242,8 +307,9 @@ def evaluate_threshold(
         )
     )
 
+
     # --------------------------------------------------------
-    # Correctly detected emerging attacks escalated to RAG.
+    # Correctly detected emerging attacks escalated to RAG
     # --------------------------------------------------------
 
     emerging_attacks_routed_rag = int(
@@ -254,19 +320,28 @@ def evaluate_threshold(
         )
     )
 
+
     # --------------------------------------------------------
-    # Emerging attack escalation rate.
+    # Emerging attack escalation rate
+    #
+    # Among ALL emerging attacks, what percentage of correctly
+    # detected attacks were escalated to RAG?
+    #
+    # This is kept as a separate metric from the
+    # false-negative escalation rate.
     # --------------------------------------------------------
 
     emerging_attack_escalation_rate = (
         emerging_attacks_routed_rag
-        / emerging_attack_count * 100
+        / emerging_attack_count
+        * 100
         if emerging_attack_count > 0
         else 0.0
     )
 
+
     # --------------------------------------------------------
-    # High-confidence emerging attacks routed LOCAL.
+    # High-confidence emerging attacks routed LOCAL
     # --------------------------------------------------------
 
     emerging_high_confidence_attacks_local = int(
@@ -275,6 +350,11 @@ def evaluate_threshold(
             & emerging_local_mask
         )
     )
+
+
+    # --------------------------------------------------------
+    # Return threshold-level results
+    # --------------------------------------------------------
 
     return {
         "threshold": threshold,
@@ -297,6 +377,7 @@ def evaluate_threshold(
             else 0.0
         ),
 
+        # Model-level metrics
         "attack_recall_percent": (
             metrics["attack_recall_percent"]
         ),
@@ -305,17 +386,31 @@ def evaluate_threshold(
             metrics["false_positive_rate_percent"]
         ),
 
-        # Model-level false negatives.
+        # Emerging model false negatives
         "emerging_model_false_negatives": (
             emerging_model_false_negatives
         ),
 
-        # Correctly detected attacks that remained local.
+        # NEW: missed emerging attacks kept local
+        "emerging_false_negatives_routed_local": (
+            emerging_false_negatives_routed_local
+        ),
+
+        # NEW: missed emerging attacks escalated to RAG
+        "emerging_false_negatives_routed_rag": (
+            emerging_false_negatives_routed_rag
+        ),
+
+        # NEW: percentage of ML false negatives escalated
+        "false_negative_escalation_rate_percent": (
+            false_negative_escalation_rate
+        ),
+
+        # Correctly detected emerging attacks
         "emerging_attacks_routed_local": (
             emerging_attacks_routed_local
         ),
 
-        # Correctly detected attacks escalated to RAG.
         "emerging_attacks_routed_rag": (
             emerging_attacks_routed_rag
         ),
@@ -393,20 +488,36 @@ def print_results(
     results: pd.DataFrame,
 ) -> None:
 
-    print("\n" + "=" * 110)
-    print("ADAPTIVE CONFIDENCE THRESHOLD EVALUATION")
-    print("=" * 110)
+    print("\n" + "=" * 125)
+
+    print(
+        "ADAPTIVE CONFIDENCE THRESHOLD EVALUATION"
+    )
+
+    print("=" * 125)
 
     display_columns = [
         "dataset",
         "threshold",
         "local_percentage",
         "rag_invocation_percentage",
+
         "attack_recall_percent",
+
         "false_positive_rate_percent",
+
         "emerging_model_false_negatives",
+
+        "emerging_false_negatives_routed_local",
+
+        "emerging_false_negatives_routed_rag",
+
+        "false_negative_escalation_rate_percent",
+
         "emerging_attacks_routed_local",
+
         "emerging_attacks_routed_rag",
+
         "emerging_attack_escalation_rate_percent",
     ]
 
@@ -415,10 +526,25 @@ def print_results(
             index=False,
             formatters={
                 "threshold": "{:.2f}".format,
+
                 "local_percentage": "{:.2f}".format,
-                "rag_invocation_percentage": "{:.2f}".format,
-                "attack_recall_percent": "{:.2f}".format,
-                "false_positive_rate_percent": "{:.2f}".format,
+
+                "rag_invocation_percentage": (
+                    "{:.2f}".format
+                ),
+
+                "attack_recall_percent": (
+                    "{:.2f}".format
+                ),
+
+                "false_positive_rate_percent": (
+                    "{:.2f}".format
+                ),
+
+                "false_negative_escalation_rate_percent": (
+                    "{:.2f}".format
+                ),
+
                 "emerging_attack_escalation_rate_percent": (
                     "{:.2f}".format
                 ),
@@ -475,9 +601,11 @@ def main() -> None:
         index=False,
     )
 
-    print("\n" + "=" * 110)
+    print("\n" + "=" * 125)
+
     print("RESULTS SAVED")
-    print("=" * 110)
+
+    print("=" * 125)
 
     print(OUTPUT_FILE)
 
