@@ -4,7 +4,9 @@
 
 ### Resource-Efficient • Uncertainty-Aware • Continually Adaptive
 
-**An end-to-end research prototype for detecting known and emerging IoT cyber threats at the edge, monitoring uncertainty and concept drift, and selectively escalating difficult cases to provenance-aware cybersecurity RAG.**
+**Detect locally. Escalate selectively. Retrieve responsibly.**
+
+An end-to-end research prototype for detecting known and emerging IoT cyber threats at the edge, monitoring prediction uncertainty and concept drift, and selectively escalating difficult cases to a provenance-aware cybersecurity RAG layer.
 
 <p>
   <img src="https://img.shields.io/badge/Python-3.x-3776AB?style=for-the-badge&logo=python&logoColor=white">
@@ -19,255 +21,527 @@
 
 ---
 
-# 🚀 What did we build?
+## 🚀 At a Glance
 
-Instead of sending every IoT network event to an expensive cybersecurity reasoning layer, this project uses a **two-level security architecture**:
+| | |
+|---|---:|
+| **Dataset** | CIC-IoT-2023 |
+| **Processed samples** | ~2.21M |
+| **Network-flow features** | 39 |
+| **Held-out emerging classes** | 3 |
+| **Controlled end-to-end evaluation** | 20,000 samples |
+| **Local routing** | **80.30%** |
+| **RAG routing** | **19.71%** |
+| **RAG workload avoided vs Always-RAG** | **80.30%** |
+| **Known-test IDS recall** | **98.90%** |
+| **Known-test IDS F1** | **99.44%** |
+| **Emerging-test IDS recall** | **34.67%** |
+| **Retrieval benchmark cases** | 8 |
+| **Automated tests** | **9/9 passing** |
 
-> **Edge AI first. Additional cybersecurity reasoning only when it is needed.**
+> These are results from the current controlled research evaluation. They are not universal production-performance guarantees.
 
-The system first performs lightweight intrusion detection locally.
+---
 
-It then asks:
+# 🎯 What Did We Build?
 
-- How confident is the model?
-- Has the traffic stream changed?
-- Does this case require additional cybersecurity knowledge?
+Traditional intrusion detection asks:
 
-Only selected cases are escalated to a **provenance-aware Retrieval-Augmented Generation (RAG) layer**.
+> **Is this traffic malicious?**
+
+This project adds another question:
+
+> **Does this case require additional cybersecurity reasoning?**
+
+The framework therefore uses a two-level architecture:
+
+### ⚡ Level 1 — Edge AI
+A lightweight Random Forest performs the first-stage intrusion-detection task locally.
+
+### 🧭 Level 2 — Cybersecurity Knowledge
+Only selected cases are escalated to a provenance-aware RAG layer.
+
+The routing decision is driven by:
+
+- prediction confidence;
+- calibrated attack probability;
+- concept-drift information.
+
+The central research contribution is **selective orchestration**, not simply combining Random Forest, RAG, uncertainty, and drift detection as separate technologies.
+
+---
+
+# 🏗️ Architecture
 
 ```mermaid
-flowchart LR
-    A[IoT Network Traffic] --> B[Preprocessing]
+flowchart TD
+    A[IoT Traffic] --> B[Preprocessing]
     B --> C[Random Forest IDS]
-    C --> D[Attack Probability]
+    C --> D[Raw Attack Probability]
     D --> E[Isotonic Calibration]
-    E --> F[Confidence]
-    F --> G[ADWIN Drift Detection]
-    F --> H[Edge Orchestrator]
-    G --> H
+    E --> F[Calibrated Probability]
+    F --> G[Confidence]
 
-    H -->|High confidence + no drift| I[LOCAL]
-    H -->|Low confidence or drift| J[RAG]
+    F --> H[ADWIN Drift Detection]
+    G --> I[Edge Orchestrator]
+    H --> I
 
-    J --> K[Observable Behavior Context]
-    K --> L[Retrieval]
+    I -->|High confidence + no drift| J[LOCAL]
+    I -->|Low confidence or drift| K[RAG]
 
-    L --> M[Lexical Retrieval]
-    L --> N[Semantic Retrieval]
+    K --> L[Label-Free Behavior Context]
+    L --> M[Retrieval]
 
-    M --> O[Provenance-aware Cybersecurity KB]
-    N --> O
+    M --> N[Lexical Retrieval]
+    M --> O[Semantic Retrieval]
 
-    O --> P[Grounded Response]
-    P --> Q[Candidate Threat]
-    P --> R[Uncertainty]
-    P --> S[Recommendation]
-    P --> T[Containment Guidance]
-    P --> U[Evidence]
-🎯 Core Research Idea
+    N --> P[Cybersecurity Knowledge Base]
+    O --> P
 
-The project is not simply "Random Forest + RAG."
+    P --> Q[Provenance Evidence]
+    Q --> R[Grounded Response]
 
-The central research contribution is the selective orchestration mechanism connecting:
+    R --> S[Candidate Threat]
+    R --> T[Uncertainty]
+    R --> U[Recommendation]
+    R --> V[Containment Guidance]
+```
 
-Edge intrusion detection
-↓
-Probability calibration
-↓
-Prediction confidence
-↓
-Concept-drift monitoring
-↓
-Dynamic routing
-↓
-Provenance-aware cybersecurity retrieval
-↓
-Evidence-grounded explanation and mitigation guidance
+---
 
-The goal is to reduce unnecessary RAG/LLM interactions while still giving difficult or uncertain cases access to broader cybersecurity knowledge.
+# 💡 Core Research Idea
 
-📌 Problem Statement
+The architecture follows:
 
-Design and develop a resource-efficient, uncertainty-aware, continually adaptive Edge-AI cybersecurity framework for IoT networks that detects known and emerging cyber threats under evolving network conditions.
+```text
+IoT Traffic
+    ↓
+Preprocessing
+    ↓
+Edge ML IDS
+    ↓
+Probability Calibration
+    ↓
+Confidence + Drift Monitoring
+    ↓
+Edge Orchestrator
+    ↓
+┌───────────────────────────────────┐
+│ High confidence + no drift        │ → LOCAL
+│ Low confidence OR drift            │ → RAG
+└───────────────────────────────────┘
+    ↓
+Cybersecurity Evidence
+    ↓
+Grounded Explanation
+    ↓
+Mitigation Guidance
+```
+
+The goal is to avoid sending every event through a heavier cybersecurity-reasoning layer.
+
+---
+
+# 📌 Problem Statement
+
+Design and develop a **resource-efficient, uncertainty-aware, continually adaptive Edge-AI cybersecurity framework for IoT networks** that detects known and emerging cyber threats under evolving network conditions.
 
 The framework is designed to:
 
-perform lightweight intrusion and anomaly detection at the edge;
-continuously monitor prediction uncertainty;
-detect changes in the traffic stream using concept-drift detection;
-dynamically decide whether a case can be handled locally or requires additional cybersecurity knowledge;
-selectively invoke a provenance-aware RAG pipeline for low-confidence, anomalous, or emerging cases;
-retrieve relevant evidence from trusted cybersecurity knowledge sources;
-generate evidence-grounded threat interpretations and context-specific mitigation guidance;
-minimize unnecessary RAG/LLM interactions while maintaining useful detection performance and low response latency.
-⭐ Key Results at a Glance
-Metric	Result
-Processed CIC-IoT-2023 samples	~2.21M
-Network-flow features	39
-Held-out emerging attack classes	3
-Controlled end-to-end evaluation	20,000 samples
-Local decisions	80.30%
-RAG decisions	19.71%
-RAG workload avoided vs Always-RAG	80.30%
-Measured cumulative RAG latency reduction	~80.53%
-Known-test binary IDS recall	98.90%
-Known-test binary IDS F1	99.44%
-Emerging-test binary IDS recall	34.67%
-Retrieval benchmark cases	8
-Retrieval benchmark Hit@1	1.00 lexical / 1.00 semantic
-Automated tests	9/9 passing
+- perform lightweight intrusion and anomaly detection at the edge;
+- monitor prediction uncertainty;
+- identify changes in traffic behavior through concept-drift monitoring;
+- dynamically determine whether a case can be handled locally;
+- selectively invoke a provenance-aware RAG pipeline for difficult or uncertain cases;
+- retrieve relevant cybersecurity evidence;
+- generate evidence-grounded threat interpretation;
+- provide context-specific mitigation guidance;
+- minimize unnecessary RAG/LLM interactions;
+- maintain low response latency and reasonable edge resource usage.
 
-The results above are from the current controlled research evaluation and should not be interpreted as universal production performance.
+---
 
-🧠 Why this architecture?
+# 🌟 Why This Architecture?
 
-A conventional IDS can answer:
+A single ML classifier may be very good at identifying malicious traffic while still being weak at answering:
 
-"Is this traffic malicious?"
+> **What cybersecurity knowledge should an analyst consult next?**
 
-But real cybersecurity operations often need additional answers:
+This project therefore separates:
 
-"How confident are we?"
-"Has the traffic behavior changed?"
-"What cybersecurity knowledge is relevant?"
-"What should an analyst investigate next?"
+| Layer | Responsibility |
+|---|---|
+| ⚡ Edge ML | Fast first-stage detection |
+| 📏 Calibration | Improve probability interpretation |
+| 🌊 Drift Detection | Identify changing prediction behavior |
+| 🧭 Orchestrator | Decide LOCAL vs RAG |
+| 📚 Knowledge Base | Store trusted cybersecurity knowledge |
+| 🔎 Retrieval | Find relevant evidence |
+| 🧾 Grounded Generator | Produce evidence-supported interpretation |
+| 🛠️ Recommendations | Provide mitigation/containment guidance |
 
-This project separates those responsibilities.
+---
 
-Layer	Responsibility
-⚡ Edge ML	Fast first-stage intrusion detection
-📏 Calibration	Produce better-behaved attack probabilities
-🌊 Drift Detector	Monitor changing prediction behavior
-🧭 Orchestrator	Decide LOCAL vs RAG
-📚 Knowledge Base	Store source-linked cybersecurity knowledge
-🔎 Retriever	Find relevant evidence
-🧾 Grounded Generator	Produce evidence-supported interpretation
-🛠️ Recommendation Layer	Provide context-specific mitigation guidance
-🏗️ Complete System Architecture
-🧩 System Components
-1. Data and Preprocessing
+# 🧠 Main Contributions
 
-The system starts from CIC-IoT-2023 network-flow data.
+## 1. Lightweight Edge-AI Intrusion Detection
 
-The preprocessing stage produces:
+A Random Forest classifier performs binary intrusion detection from IoT network-flow features.
 
-cleaned numerical features;
-binary attack labels;
-multiclass attack labels;
-training/validation/test splits;
-a dedicated held-out emerging-attack evaluation set.
-2. Edge Intrusion Detection
+The first-stage prediction is:
 
-The first-stage detector is a Random Forest binary classifier.
-
-It predicts:
-
+```text
 BENIGN
 ATTACK
+```
 
-Configuration:
+---
 
+## 2. Probability Calibration
+
+Random Forest probability outputs are calibrated using:
+
+**Isotonic Regression**
+
+This calibrated probability is then used by the routing layer as an uncertainty signal.
+
+---
+
+## 3. Concept-Drift Monitoring
+
+The framework uses:
+
+**ADWIN — Adaptive Windowing**
+
+from the River library to monitor the calibrated attack-probability stream.
+
+---
+
+## 4. Selective Security Escalation
+
+The Edge Orchestrator chooses between:
+
+```text
+LOCAL
+```
+
+and:
+
+```text
+RAG
+```
+
+based on prediction confidence and drift information.
+
+---
+
+## 5. Provenance-Aware Cybersecurity RAG
+
+The RAG subsystem retrieves information from source-linked cybersecurity knowledge records covering:
+
+- MITRE ATT&CK
+- NIST
+- OWASP
+- CISA
+- CWE
+
+---
+
+## 6. Evidence-Grounded Response Generation
+
+The response contains structured fields for:
+
+- candidate threat;
+- detection interpretation;
+- uncertainty reason;
+- likely behavior;
+- recommendation;
+- containment guidance;
+- caveat;
+- evidence.
+
+---
+
+## 7. Research-Oriented Evaluation
+
+The repository contains experiments covering:
+
+- binary IDS performance;
+- emerging-attack performance;
+- confidence analysis;
+- probability calibration;
+- concept drift;
+- threshold analysis;
+- routing-policy comparison;
+- three-system ablation;
+- Selective-RAG vs Always-RAG;
+- emerging false-negative escalation;
+- emerging evidence alignment;
+- lexical vs semantic retrieval;
+- orchestrator latency;
+- CPU and memory measurements;
+- end-to-end integration.
+
+---
+
+# 📊 Dataset
+
+## CIC-IoT-2023
+
+The project uses the **CIC-IoT-2023** dataset.
+
+Locally, the downloaded data is organized into five merged CSV partitions:
+
+```text
+Merged01.csv
+Merged02.csv
+Merged03.csv
+Merged04.csv
+Merged05.csv
+```
+
+These are partitions of the **same dataset**, not five independent datasets.
+
+---
+
+## Processed Dataset
+
+| Property | Value |
+|---|---:|
+| Rows | ~2,207,338 |
+| Columns | 41 |
+| Network-flow features | 39 |
+| Label fields | 2 |
+
+Binary distribution:
+
+```text
+ATTACK  = 2,123,497
+BENIGN  =    83,841
+```
+
+---
+
+## Feature Groups
+
+The feature set includes:
+
+- header and packet statistics;
+- protocol indicators;
+- TCP flags;
+- application-protocol indicators;
+- traffic rate/count features;
+- packet-size statistics;
+- inter-arrival time;
+- statistical/variance features.
+
+---
+
+# 🚨 Emerging-Threat Evaluation
+
+Three attack classes were held out from model training:
+
+```text
+DNS_SPOOFING
+VULNERABILITYSCAN
+DOS-HTTP_FLOOD
+```
+
+The experimental design therefore separates:
+
+```text
+Known attacks
+    ↓
+Model development / evaluation
+
+Emerging attacks
+    ↓
+Held out from model training
+```
+
+### Important
+
+The known/emerging split is a **controlled held-out-class evaluation**.
+
+It is **not claimed to be a natural chronological deployment stream**.
+
+---
+
+# 🤖 Machine Learning Pipeline
+
+## Stage 1 — Binary IDS
+
+The first Random Forest predicts:
+
+```text
+BENIGN
+ATTACK
+```
+
+### Configuration
+
+```text
 n_estimators = 100
 max_depth = 20
 class_weight = balanced
 random_state = 42
 n_jobs = -1
+```
 
 Model artifact:
 
+```text
 models/binary_ids_random_forest.joblib
-Known-test performance
-Metric	Result
-Precision	99.99%
-Recall	98.90%
-F1-score	99.44%
-Emerging-attack performance
-Metric	Result
-Precision	100.00%
-Recall	34.67%
-F1-score	51.49%
+```
 
-The large drop in emerging-threat recall motivates the additional reasoning layer.
+Model artifacts are intentionally excluded from GitHub because they are large/generated files.
 
-🎯 3. Attack-Type Classification
+---
 
-A second Random Forest is trained on the known attack classes to classify attack family/type after malicious traffic is identified.
+## Known-Test Performance
 
-Known attack classes   = 30
-Held-out emerging      = 3
+| Metric | Result |
+|---|---:|
+| Precision | **99.99%** |
+| Recall | **98.90%** |
+| F1-score | **99.44%** |
+
+---
+
+## Emerging-Test Performance
+
+| Metric | Result |
+|---|---:|
+| Precision | **100.00%** |
+| Recall | **34.67%** |
+| F1-score | **51.49%** |
+
+The large recall drop on unseen attack classes motivates the use of an additional cybersecurity knowledge layer.
+
+---
+
+# 🎯 Attack-Type Classifier
+
+A second Random Forest is trained on known attack classes to classify the attack family/type after malicious traffic has been identified.
+
+```text
+Known attack classes = 30
+Held-out emerging classes = 3
+```
 
 Model artifact:
 
+```text
 models/attack_type_random_forest.joblib
-Known-test performance
-Metric	Result
-Accuracy	~78%
-Macro F1	0.626
-Weighted F1	0.775
+```
 
-The lower macro F1 reflects the difficulty of classifying rare and imbalanced attack classes.
+### Known-Test Performance
 
-📏 4. Prediction Probability Calibration
+| Metric | Result |
+|---|---:|
+| Accuracy | **~78%** |
+| Macro F1 | **0.626** |
+| Weighted F1 | **0.775** |
 
-Random Forest output probabilities are used by the routing layer as a signal of uncertainty.
+The lower macro F1 reflects the difficulty of distinguishing rare and imbalanced attack classes.
 
-To improve their interpretation, the project applies:
+---
 
+# 📏 Probability Calibration
+
+The system uses:
+
+```text
+Random Forest
+      ↓
+Raw attack probability
+      ↓
 Isotonic Regression
+      ↓
+Calibrated attack probability
+      ↓
+Confidence
+      ↓
+Routing
+```
 
-The calibrator is trained on the validation set only.
+The calibration model is trained on the **validation set only**.
 
 Artifact:
 
+```text
 models/attack_probability_calibrator.joblib
-Brier score comparison
-Split	Raw	Calibrated
-Validation	0.009203	0.006140
-Known test	0.009128	0.006095
-Emerging	0.561658	0.259323
+```
 
-Calibration improves the measured probability quality, although uncertainty remains imperfect under distribution shift.
+---
 
-🌊 5. Concept Drift Detection
+## Brier Score Improvement
 
-The streaming component uses:
+| Split | Raw | Calibrated |
+|---|---:|---:|
+| Validation | 0.009203 | **0.006140** |
+| Known test | 0.009128 | **0.006095** |
+| Emerging | 0.561658 | **0.259323** |
 
-ADWIN — Adaptive Windowing
+Calibration improves measured probability quality, although uncertainty remains imperfect under distribution shift.
 
-from the River library.
+---
+
+# 🌊 Concept Drift Detection
+
+The streaming layer uses:
+
+**ADWIN**
+
+from River.
 
 Configuration:
 
+```text
 delta = 0.002
+```
 
-The detector monitors the calibrated attack-probability stream.
+ADWIN monitors the calibrated attack-probability stream and identifies changes in its distribution.
 
-Important research interpretation
+---
 
-The drift experiment uses a controlled transition from known traffic to held-out emerging traffic.
+## Drift Experiment Interpretation
 
-It is not claimed to be a naturally occurring chronological deployment stream.
+The controlled experiment transitions from:
 
-The drift event was detected near the transition.
+```text
+KNOWN
+  ↓
+EMERGING
+```
 
-However, the subsequent routing experiment found that the detected drift produced no additional unique RAG escalations beyond those already triggered by low confidence in this stream.
+The observed drift event occurred near the transition.
 
-That negative result is intentionally retained.
+However:
 
-🧭 6. Edge Orchestrator
+> Drift produced no additional unique RAG escalations beyond those already generated by low-confidence routing in the evaluated stream.
 
-The Edge Orchestrator is the central routing component.
+This is retained as a **negative research finding** rather than hidden.
 
-It receives:
+---
 
+# 🧭 Edge Orchestrator
+
+The Edge Orchestrator connects the ML layer to the RAG layer.
+
+### Inputs
+
+```text
 prediction
 raw_probability
 calibrated_probability
 confidence
 drift_detected
+```
 
-and produces:
+### Outputs
 
+```text
 prediction
 raw_probability
 calibrated_probability
@@ -275,42 +549,85 @@ confidence
 drift_detected
 routing_decision
 routing_reason
-Default routing threshold
-confidence_threshold = 0.70
-Routing policy
-Confidence	Drift	Routing
-High	No	✅ LOCAL
-Low	No	🔎 RAG
-High	Yes	🔎 RAG
-Low	Yes	🔎 RAG
+```
 
-The threshold is treated as a resource-aware engineering/research trade-off, not as a globally optimal threshold.
+---
 
-⚖️ 7. Adaptive Threshold Evaluation
+## Routing Policy
 
-Several confidence thresholds were evaluated.
+Default confidence threshold:
 
-Threshold	RAG Invocation	False-Negative Escalation
-0.60	6.63%	19.50%
-0.65	9.86%	29.01%
-0.70	19.84%	58.38%
-0.75	22.34%	65.58%
-0.80	24.31%	71.22%
-0.85	26.82%	78.12%
-0.90	30.73%	89.16%
+```text
+0.70
+```
+
+| Confidence | Drift | Decision |
+|---|---|---|
+| High | No | ✅ LOCAL |
+| Low | No | 🔎 RAG |
+| High | Yes | 🔎 RAG |
+| Low | Yes | 🔎 RAG |
+
+The threshold is treated as a **resource-aware engineering/research trade-off**, not as a globally optimal mathematical threshold.
+
+---
+
+# ⚖️ Adaptive Threshold Analysis
+
+| Threshold | RAG Invocation | FN Escalation |
+|---:|---:|---:|
+| 0.60 | 6.63% | 19.50% |
+| 0.65 | 9.86% | 29.01% |
+| **0.70** | **19.84%** | **58.38%** |
+| 0.75 | 22.34% | 65.58% |
+| 0.80 | 24.31% | 71.22% |
+| 0.85 | 26.82% | 78.12% |
+| 0.90 | 30.73% | 89.16% |
 
 The selected operating point is:
 
+```text
 0.70
+```
 
-because it provides a practical trade-off between RAG workload and false-negative escalation coverage.
+because it provides a practical trade-off between RAG workload and broader false-negative escalation coverage.
 
-🔎 8. Provenance-Aware RAG
+---
 
-The RAG subsystem is intentionally separated from the edge detector.
+# 🔎 RAG Architecture
 
-The RAG request can contain:
+The RAG layer is separated from the edge detector.
 
+```text
+RAG Request
+    ↓
+Behavior Context
+    ↓
+Retrieval Query
+    ↓
+┌─────────────────────────┐
+│ Lexical Retrieval       │
+│ Semantic Retrieval      │
+└─────────────────────────┘
+    ↓
+Provenance Evidence
+    ↓
+Grounded Response
+    ↓
+Threat + Explanation
++ Uncertainty
++ Recommendation
++ Containment
++ Evidence
+```
+
+---
+
+# 🧩 RAG Request Contract
+
+The structured RAG request contains:
+
+```text
 prediction
 raw_probability
 calibrated_probability
@@ -318,46 +635,90 @@ confidence
 drift_detected
 routing_reason
 behavior_context
+```
 
-The important part is:
+`behavior_context` is optional and carries observable network behavior.
 
-The ground-truth attack label is not passed into the RAG request.
+The ground-truth label is deliberately not passed into the RAG inference path.
 
-📚 9. Cybersecurity Knowledge Base
+---
 
-Active knowledge base:
+# 🧠 Label-Free Behavior Context
 
+The RAG layer receives information derived from observable network-flow features such as:
+
+```text
+active_protocols
+active_application_protocols
+active_tcp_flags
+traffic_statistics
+retrieval_query
+```
+
+The following evaluation labels are excluded from the runtime RAG context:
+
+```text
+Label
+Label_Binary
+```
+
+This separation prevents the evaluation answer from being directly exposed to the RAG system.
+
+---
+
+# 📚 Cybersecurity Knowledge Base
+
+Active corpus:
+
+```text
 knowledge_base/cybersecurity_sources_expanded.json
+```
 
 Current size:
 
+```text
 37 source-linked records
+```
 
-Sources represented include:
+Coverage includes:
 
-MITRE ATT&CK
-NIST
-OWASP
-CISA
-CWE
+### MITRE ATT&CK
+- Network Service Scanning
+- Brute Force
+- Exploitation of Remote Services
+- Network Denial of Service
+- Service Exhaustion / HTTP Flooding
+- Name Resolution Poisoning
 
-Topics include:
+### NIST
+- IoT security capabilities
+- device security state
+- incident response
+- incident analysis
+- containment
 
-Network Service Scanning
-Name Resolution Poisoning
-HTTP flooding
-Network Denial of Service
-Brute Force
-Exploitation of Remote Services
-Command Injection
-SQL Injection
-IoT security capabilities
-Incident response
-Containment
-Hard-coded credentials
+### OWASP
+- Command Injection
+- SQL Injection
+- Denial of Service
 
-Each knowledge record stores provenance-related information such as:
+### CISA
+- DDoS guidance
 
+### CWE
+- Hard-coded Credentials
+
+---
+
+# 🔐 Why Provenance Matters
+
+The system is designed so that cybersecurity responses do not appear without supporting evidence.
+
+Retrieved evidence is carried into the response so that an analyst can trace the recommendation and interpretation back to the cybersecurity source material used by the pipeline.
+
+Each knowledge record contains provenance-related information such as:
+
+```text
 source identity
 document identifier
 chunk identifier
@@ -366,92 +727,107 @@ document type
 topic / attack family
 source URL
 content
-Why provenance?
+```
 
-Cybersecurity recommendations should not appear from nowhere.
+---
 
-The system carries retrieved evidence forward so that an analyst can trace the response back to the cybersecurity source material used by the retrieval stage.
+# 🔬 Retrieval Engine
 
-🔬 10. Retrieval Engine
+The project supports two retrieval methods.
 
-Two retrieval strategies are implemented.
+## 1. Lexical Retrieval
 
-Lexical Retrieval
+Uses transparent token-overlap matching over fields such as:
 
-A transparent token-overlap baseline is used across fields such as:
-
+```text
 document_title
 document_type
 topic
 attack_family
 content
+```
 
 Advantages:
 
-lightweight;
-transparent;
-deterministic;
-easy to inspect.
-Semantic Retrieval
+- lightweight;
+- deterministic;
+- transparent;
+- easy to inspect.
 
-Semantic search uses:
+---
 
+## 2. Semantic Retrieval
+
+Uses:
+
+```text
 Sentence Transformers
 all-MiniLM-L6-v2
+```
 
 Embedding dimension:
 
+```text
 384
+```
 
-The embedding model and document embeddings are loaded/cached lazily so lexical-only experiments do not need to initialize the semantic model.
+The embedding model and document embeddings are loaded/cached lazily.
 
-📈 11. Retrieval Benchmark
+---
 
-The retrieval evaluation contains 8 hand-authored cybersecurity query cases covering:
+# 📈 Retrieval Benchmark
 
-vulnerability scanning;
-DNS-related behavior;
-HTTP flooding;
-brute force;
-command injection;
-SQL injection;
-network DoS;
-IoT security.
-Results
-Metric	Lexical	Semantic
-Hit@1	1.000	1.000
-Hit@3	1.000	1.000
-Hit@4	1.000	1.000
-MRR	1.000	1.000
-Precision@1	1.000	1.000
-Precision@3	0.917	0.833
-Precision@4	0.813	0.719
-Recall@4	0.813	0.750
-NDCG@4	0.925	0.860
+The retrieval benchmark contains **8 hand-authored cybersecurity cases** covering:
 
-These results apply specifically to the eight-case retrieval benchmark. They are not universal retrieval-performance claims.
+- vulnerability scanning;
+- DNS-related behavior;
+- HTTP flooding;
+- brute force;
+- command injection;
+- SQL injection;
+- network denial of service;
+- IoT security.
 
-🧾 12. Grounded Response Generation
+### Results
 
-The current repository uses a:
+| Metric | Lexical | Semantic |
+|---|---:|---:|
+| Hit@1 | **1.000** | **1.000** |
+| Hit@3 | **1.000** | **1.000** |
+| Hit@4 | **1.000** | **1.000** |
+| MRR | **1.000** | **1.000** |
+| Precision@1 | **1.000** | **1.000** |
+| Precision@3 | 0.917 | 0.833 |
+| Precision@4 | 0.813 | 0.719 |
+| Recall@4 | 0.813 | 0.750 |
+| NDCG@4 | 0.925 | 0.860 |
 
-Deterministic Grounded Generator
+> These values apply specifically to the eight-case retrieval benchmark. They should not be interpreted as universal retrieval performance.
 
-This was intentionally used for reproducible offline evaluation.
+---
+
+# 🧾 Grounded Response Generation
+
+The current implementation uses a:
+
+**Deterministic Grounded Generator**
+
+This provides a reproducible offline baseline.
 
 The generator:
 
-receives a structured RAG request;
-receives retrieved evidence;
-validates cited evidence identifiers;
-derives a candidate threat interpretation from retrieved evidence;
-generates structured explanation fields;
-selects evidence-grounded recommendations;
-preserves provenance;
-includes a caveat about the deterministic baseline.
+1. receives the RAG request;
+2. receives retrieved evidence;
+3. validates cited evidence identifiers;
+4. derives a candidate threat interpretation from retrieved evidence;
+5. produces structured explanation fields;
+6. selects evidence-grounded recommendations;
+7. preserves provenance;
+8. includes a caveat about the deterministic baseline.
 
-The output contains:
+### Response fields
 
+```text
 Threat
 Detection Interpretation
 Uncertainty Reason
@@ -460,173 +836,235 @@ Recommendation
 Containment Action
 Caveat
 Evidence
-Important
+```
 
-The deterministic generator is not a production autonomous cybersecurity LLM.
+### Important
 
-The architecture exposes an adapter-style interface that can be connected to a real LLM in future work.
+This generator is **not a production autonomous cybersecurity LLM**.
 
-🔄 13. Label-Free Behavior Context
+The architecture provides a clean interface for a future real LLM adapter.
 
-A particularly important part of the implementation is the behavior context passed to RAG.
+---
 
-The RAG layer receives observable traffic information such as:
+# 🔄 End-to-End Evaluation
 
-active_protocols
-active_application_protocols
-active_tcp_flags
-traffic_statistics
-retrieval_query
+Implementation:
 
-The context is deliberately constructed without:
-
-Label
-Label_Binary
-
-This prevents the evaluation answer from being directly passed into retrieval or generation.
-
-This distinction is important for research integrity.
-
-🧪 14. End-to-End Evaluation
-
-The complete pipeline is implemented in:
-
+```text
 src/run_end_to_end.py
+```
 
-Controlled evaluation stream:
+Controlled stream:
 
+```text
 10,000 KNOWN
 10,000 EMERGING
 ----------------
 20,000 TOTAL
-Routing results
-Decision	Samples	Percentage
-LOCAL	16,059	80.30%
-RAG	3,941	19.71%
-Phase-wise routing
-Phase	LOCAL	RAG
-KNOWN	98.58%	1.42%
-EMERGING	62.01%	37.99%
+```
 
-The RAG stage logs the evidence identifiers retrieved for every escalated sample.
+---
 
-Measured deterministic offline RAG timing
-Measurement	Mean
-Retrieval latency	0.074 ms
-Generation latency	0.005 ms
-Total RAG latency	0.140 ms
+## Routing Results
 
-These are measurements of the current deterministic local implementation and should not be interpreted as production LLM API latency.
+| Decision | Samples | Percentage |
+|---|---:|---:|
+| ✅ LOCAL | 16,059 | **80.30%** |
+| 🔎 RAG | 3,941 | **19.71%** |
 
-♻️ 15. Selective-RAG vs Always-RAG
+### Phase-wise Routing
+
+| Phase | LOCAL | RAG |
+|---|---:|---:|
+| KNOWN | **98.58%** | 1.42% |
+| EMERGING | **62.01%** | **37.99%** |
+
+---
+
+## Deterministic Offline RAG Timing
+
+| Measurement | Mean |
+|---|---:|
+| Retrieval | **0.074 ms** |
+| Generation | **0.005 ms** |
+| Total RAG | **0.140 ms** |
+
+> These timings describe the local deterministic implementation and should not be interpreted as production LLM/API latency.
+
+---
+
+# ♻️ Selective-RAG vs Always-RAG
 
 A dedicated experiment compares the proposed selective strategy with an Always-RAG baseline.
 
-Selective-RAG
-
-Only routed cases invoke RAG:
-
-3,941 / 20,000
-= 19.71%
-Always-RAG
+## Always-RAG
 
 Every sample invokes RAG:
 
+```text
 20,000 / 20,000
 = 100%
-Workload reduction
+```
+
+## Selective-RAG
+
+Only routed cases invoke RAG:
+
+```text
+3,941 / 20,000
+= 19.71%
+```
+
+---
+
+## Workload Reduction
+
+```text
 20,000 - 3,941
 = 16,059 RAG calls avoided
+```
 
 Therefore:
 
+```text
 RAG workload reduction
 = 80.30%
+```
 
 Measured cumulative deterministic RAG latency reduction:
 
+```text
 ≈ 80.53%
+```
 
-This demonstrates reduced RAG workload under the evaluated deterministic offline implementation. It should not be directly generalized into claims such as "80% lower real-world LLM cost."
+### Correct interpretation
 
-🧪 16. Three-System Ablation
+This demonstrates reduced RAG workload under the evaluated deterministic offline implementation.
 
-The project includes a dedicated ablation study.
+It should **not** be directly generalized into claims such as:
 
-System A — Edge ML Only
+```text
+"80% lower real-world LLM cost"
+"80% lower cloud cost"
+"80% lower production power consumption"
+```
+
+---
+
+# 🧪 Three-System Ablation
+
+The project includes a routing ablation with three systems.
+
+## A — EDGE_ML_ONLY
+
+```text
 Random Forest
-      ↓
+     ↓
 LOCAL
+```
 
 No RAG escalation.
 
-System B — ML + Confidence RAG
+---
+
+## B — ML_PLUS_CONFIDENCE_RAG
+
+```text
 confidence < 0.70
         ↓
       RAG
-System C — Proposed
+```
+
+---
+
+## C — PROPOSED_CONFIDENCE_PLUS_DRIFT_RAG
+
+```text
 confidence < 0.70
         OR
 drift_detected
         ↓
       RAG
-Why this ablation matters
+```
 
-All systems use the same:
+---
 
-model predictions;
-probabilities;
-evaluated samples.
+## Why This Ablation Matters
 
-Therefore routing does not change the underlying Random Forest prediction.
+All three systems reuse the same:
 
-The ablation isolates:
+- ML predictions;
+- probabilities;
+- evaluated samples.
 
-RAG allocation;
-false-negative escalation;
-effect of drift-aware routing.
-Important observed result
+Therefore:
+
+> Routing does not change the Random Forest prediction itself.
+
+The ablation isolates the effect of:
+
+- RAG allocation;
+- emerging false-negative escalation;
+- drift-aware routing.
+
+### Observed result
 
 In the current controlled stream:
 
-Drift awareness produced no additional unique RAG escalations beyond confidence-based routing.
+> **Drift awareness produced no additional unique RAG escalations beyond confidence-based routing.**
 
-This is kept as a negative research finding rather than being hidden.
+This result is retained honestly.
 
-🌊 17. Drift Adaptation Evaluation
+---
+
+# 🌊 Drift Adaptation Evaluation
 
 The drift experiment compares:
 
+```text
 CONFIDENCE_ONLY
+```
 
 against:
 
+```text
 CONFIDENCE_PLUS_DRIFT
+```
 
-using a symmetric 5,000-sample window before and after the detected transition.
+using a symmetric window around the first detected drift event.
 
-The experiment measures:
+The evaluation measures:
 
-RAG invocation rate;
-emerging false-negative escalation;
-local false negatives;
-drift-only escalations;
-additional RAG invocations produced by drift.
+- RAG invocation rate;
+- false-negative escalation;
+- false negatives remaining local;
+- drift-only escalations;
+- additional RAG invocations caused by drift.
 
-The measured stream showed:
+### Result
 
-ADWIN detected the transition, but the affected samples were already being escalated because of low confidence.
+The detected drift event did not contribute additional unique escalations because the affected samples were already below the confidence threshold.
 
-This means the incremental routing contribution of drift was zero in this particular stream.
+This means:
 
-🚨 18. Emerging False-Negative → RAG Evidence Evaluation
+```text
+Incremental drift-only routing contribution
+= 0
+```
 
-One of the most important research experiments asks:
+for the evaluated stream.
 
-When the edge model misses an emerging attack and escalates it to RAG, does the retrieved evidence actually correspond to the attack family?
+---
 
-Expected evidence mappings:
+# 🚨 Emerging False-Negative → RAG Evidence Evaluation
 
+A separate experiment asks:
+
+> **When the edge model misses an emerging attack and sends it to RAG, does the retrieved evidence actually correspond to that attack family?**
+
+Expected evidence groups:
+
+```text
 VULNERABILITYSCAN
         ↓
 MITRE T1046
@@ -638,157 +1076,164 @@ MITRE T1557.001
 DOS-HTTP_FLOOD
         ↓
 MITRE T1499.002
-Evaluation rule
+```
 
-Ground-truth labels are used only inside this evaluation script to determine whether retrieved evidence is relevant.
+### Evaluation rule
 
-The label is never passed into the RAG pipeline.
+Ground-truth labels are used **only by the evaluation script** to determine evidence relevance.
 
-Observed result
+They are not passed into:
+
+```text
+RAG Request
+Retriever
+Generator
+```
+
+---
+
+## Observed Result
 
 Across:
 
+```text
 3,799
+```
 
 emerging false-negative cases routed to RAG:
 
+```text
 ≈ 20.40%
+```
 
-had relevant evidence within the top-four retrieved items.
+had relevant evidence within the top four retrieved items.
 
-This should not be described as:
+This metric means:
 
-"20.40% RAG attack detection accuracy."
+> **Evidence alignment for emerging false-negative RAG cases**
 
-It is an:
+It does **not** mean:
 
-evidence-alignment measurement for emerging false-negative cases routed to RAG.
+> “RAG attack-classification accuracy = 20.40%”
 
-💡 19. Important Research Insight
+---
 
-One of the strongest observations from the experiments is that:
+# 🧠 Important Research Insight
 
+The experiments reveal an important distinction:
+
+```text
 Detecting malicious traffic
             ≠
 Identifying the right cybersecurity knowledge
+```
 
-The edge model works on aggregate network-flow features.
+The Edge ML model operates on aggregate network-flow features.
 
-Cybersecurity knowledge bases, however, are written in concepts such as:
+Cybersecurity knowledge bases contain concepts such as:
 
+```text
 Network Service Scanning
 Name Resolution Poisoning
 Brute Force
 Remote Service Exploitation
 Command Injection
+```
 
-This creates a representation/vocabulary gap.
+This creates a **traffic-to-cybersecurity representation gap**.
 
-The emerging-evidence experiment exposed that gap directly.
+That gap is an important limitation and a major direction for future work.
 
-This is an important limitation, but also a natural future research direction.
+---
 
-📊 20. Resource and Latency Evaluation
+# 📊 Resource and Latency Evaluation
 
-The project also measures the overhead of the orchestration layer.
+The project measures the overhead of the orchestration layer.
 
-Orchestrator latency
+## Orchestrator Latency
 
 Measured on a 20,000-sample evaluation:
 
-Metric	Result
-Mean	13.625 μs
-Median	11.6 μs
-P95	21.4 μs
-P99	35 μs
-Throughput	~22,166 samples/s
-Resource measurement
+| Metric | Result |
+|---|---:|
+| Mean | **13.625 μs** |
+| Median | **11.6 μs** |
+| P95 | **21.4 μs** |
+| P99 | **35 μs** |
+| Throughput | **~22,166 samples/s** |
+
+---
+
+## Resource Measurement
 
 Measured on the project execution environment:
 
-Metric	Result
-CPU measurement	101.8%
-Memory at start	72.94 MB
-Memory at end	78.14 MB
-Memory change	+5.20 MB
+| Metric | Result |
+|---|---:|
+| CPU measurement | **101.8%** |
+| Memory at start | **72.94 MB** |
+| Memory at end | **78.14 MB** |
+| Memory change | **+5.20 MB** |
 
-These are measurements of the experimental environment, not universal hardware-independent performance guarantees.
+> These are environment-specific measurements, not universal hardware-independent guarantees.
 
-🧠 21. Why selective RAG matters
+---
 
-The project's central resource-efficiency argument is:
+# 🛠️ Technology Stack
 
-          All traffic
-              │
-              ▼
-        Edge ML first
-              │
-       ┌──────┴──────┐
-       │             │
-       ▼             ▼
-    Easy cases    Difficult cases
-       │             │
-       ▼             ▼
-     LOCAL          RAG
+| Technology | Purpose |
+|---|---|
+| **Python** | Main implementation language |
+| **pandas** | Dataset processing and analysis |
+| **NumPy** | Numerical operations |
+| **scikit-learn** | ML, calibration and evaluation |
+| **Random Forest** | Binary IDS and attack classification |
+| **Isotonic Regression** | Probability calibration |
+| **River** | Streaming analytics |
+| **ADWIN** | Concept-drift detection |
+| **Sentence Transformers** | Semantic retrieval |
+| **all-MiniLM-L6-v2** | 384-dimensional embedding model |
+| **PyTorch** | Semantic retrieval backend |
+| **Transformers** | NLP/model ecosystem |
+| **JSON** | Provenance-aware knowledge base |
+| **psutil** | CPU/memory measurement |
+| **unittest** | Automated tests |
+| **Git** | Version control |
+| **GitHub** | Collaboration and repository hosting |
 
-Instead of:
+---
 
-All traffic
-    │
-    ▼
-  RAG
-    │
-    ▼
-Extra reasoning everywhere
+# 🧱 Infrastructure Choices
 
-The experiment showed that the selective policy reduced the number of RAG invocations by:
+The project deliberately avoids unnecessary infrastructure.
 
-80.30%
+The current research prototype does **not** require:
 
-in the controlled 20,000-sample evaluation.
-
-🛠️ Technology Stack
-Technology	Role
-Python	Main implementation language
-pandas	Data processing and experiment analysis
-NumPy	Numerical operations
-scikit-learn	Machine learning and calibration
-Random Forest	Binary IDS + attack-type classification
-Isotonic Regression	Probability calibration
-River	Streaming analytics
-ADWIN	Concept-drift detection
-Sentence Transformers	Semantic retrieval
-all-MiniLM-L6-v2	384-dimensional semantic embeddings
-PyTorch	Semantic model backend
-Transformers	NLP/model stack
-JSON	Cybersecurity knowledge base
-psutil	CPU/memory measurement
-unittest	Automated testing
-Git	Version control
-GitHub	Collaboration and project hosting
-🧱 Architecture Choices
-
-The current prototype deliberately avoids unnecessary infrastructure.
-
-It does not require:
-
+```text
 MySQL
 MongoDB
 Elasticsearch
 A separately hosted vector database
 A dedicated backend server
+```
 
-The current research implementation uses:
+Instead, it uses:
 
-Source-linked JSON Knowledge Base
-+
+```text
+Source-linked JSON knowledge base
+        +
 In-process lexical retrieval
-+
+        +
 In-process semantic retrieval
+```
 
-This keeps the prototype lightweight and reproducible.
+This keeps the research prototype lightweight and reproducible.
 
-📂 Repository Structure
+---
+
+# 📁 Repository Structure
+
+```text
 IOT_Cyber_Project/
 │
 ├── data/
@@ -819,8 +1264,8 @@ IOT_Cyber_Project/
 │   ├── paper_results_summary.csv
 │   ├── adaptive_threshold_results.csv
 │   ├── ablation_results.csv
-│   ├── drift_adaptation_evaluation.csv
 │   ├── drift_detection_results.csv
+│   ├── drift_adaptation_evaluation.csv
 │   ├── routing_policy_comparison.csv
 │   ├── threshold_tradeoff.csv
 │   ├── always_vs_selective_rag.csv
@@ -869,7 +1314,6 @@ IOT_Cyber_Project/
 │   ├── rag_retriever.py
 │   ├── rag_pipeline.py
 │   ├── rag_integration.py
-│   ├── rag_eval...
 │   ├── run_rag.py
 │   ├── llm_adapter.py
 │   ├── run_end_to_end.py
@@ -888,365 +1332,622 @@ IOT_Cyber_Project/
 │
 ├── .gitignore
 └── README.md
+```
 
-Large raw datasets and generated model binaries are intentionally excluded from GitHub.
+---
 
-📦 Dataset Details
-CIC-IoT-2023
+# ▶️ Running the Project
 
-The dataset is organized locally into five merged CSV partitions:
+## Install Dependencies
 
-Merged01.csv
-Merged02.csv
-Merged03.csv
-Merged04.csv
-Merged05.csv
+```powershell
+pip install pandas numpy scikit-learn river sentence-transformers torch transformers psutil
+```
 
-These are partitions of the same CIC-IoT-2023 dataset.
+---
 
-Processed dataset
-Rows    ≈ 2,207,338
-Columns = 41
-Features = 39
-Labels   = 2
+## 1. Inspect the Dataset
 
-Binary distribution:
+```powershell
+python src/inspect_dataset.py
+```
 
-ATTACK = 2,123,497
-BENIGN =    83,841
+---
 
-Feature groups include:
+## 2. Preprocess Data
 
-Header / packet statistics
-Protocol indicators
-TCP flags
-Application protocol indicators
-Traffic rate/count features
-Packet-size statistics
-Inter-arrival time
-Variance/statistical features
-🚨 Emerging-Attack Evaluation Design
+```powershell
+python src/preprocess_data.py
+```
 
-The following attack classes are held out from model training:
+---
 
-DNS_SPOOFING
-VULNERABILITYSCAN
-DOS-HTTP_FLOOD
+## 3. Check Processed Data
 
-The experiment therefore distinguishes:
+```powershell
+python src/check_processed_data.py
+```
 
-Known attacks
-      ↓
-Model development / evaluation
+---
 
-Emerging attacks
-      ↓
-Held out from model training
+## 4. Create Known/Emerging Splits
 
-This setup evaluates generalization to withheld attack classes.
+```powershell
+python src/split_dataset.py
+```
 
-It does not claim chronological concept drift in the original dataset.
+---
 
-🔐 Research Integrity
+## 5. Train Binary IDS
 
-The implementation deliberately separates:
+```powershell
+python src/train_ids.py
+```
 
-Ground truth
+---
+
+## 6. Evaluate Binary IDS
+
+```powershell
+python src/evaluate_ids.py
+```
+
+---
+
+## 7. Evaluate Emerging Attacks
+
+```powershell
+python src/evaluate_emerging.py
+```
+
+---
+
+## 8. Analyze Confidence
+
+```powershell
+python src/analyze_confidence.py
+```
+
+---
+
+## 9. Calibrate Probabilities
+
+```powershell
+python src/calibrate_model.py
+```
+
+---
+
+## 10. Train Attack-Type Classifier
+
+```powershell
+python src/train_attack_classifier.py
+```
+
+---
+
+## 11. Evaluate Attack-Type Classifier
+
+```powershell
+python src/evaluate_attack_classifier.py
+```
+
+---
+
+## 12. Detect Concept Drift
+
+```powershell
+python src/detect_drift.py
+```
+
+---
+
+## 13. Evaluate Routing
+
+```powershell
+python src/evaluate_routing.py
+```
+
+---
+
+## 14. Run the Complete End-to-End Framework
+
+```powershell
+python src/run_end_to_end.py
+```
+
+---
+
+## 15. Evaluate RAG Retrieval
+
+```powershell
+python src/evaluate_rag.py
+```
+
+---
+
+## 16. Run the Ablation Study
+
+```powershell
+python src/evaluate_ablation.py
+```
+
+---
+
+## 17. Compare Always-RAG vs Selective-RAG
+
+```powershell
+python src/evaluate_always_vs_selective_rag.py
+```
+
+---
+
+## 18. Evaluate Drift Adaptation
+
+```powershell
+python src/evaluate_drift_adaptation.py
+```
+
+---
+
+## 19. Evaluate Emerging False-Negative Evidence Alignment
+
+```powershell
+python src/evaluate_emerging_rag_evidence.py
+```
+
+---
+
+## 20. Run Automated Tests
+
+```powershell
+python -m unittest discover -s tests -p "test_*.py" -v
+```
+
+Expected result:
+
+```text
+Ran 9 tests
+
+OK
+```
+
+---
+
+# ✅ Automated Testing
+
+The project contains automated tests for:
+
+- RAG request validation;
+- orchestration-to-RAG integration;
+- LOCAL routing protection;
+- evidence/provenance handling;
+- grounded responses;
+- latency recording;
+- required response fields.
+
+Current test status:
+
+```text
+9/9 tests passing
+```
+
+---
+
+# 🔐 Research Integrity
+
+A major design principle of this project is to separate:
+
+### Ground Truth
 
 Used for:
 
+```text
 evaluation
 metrics
 error analysis
-Runtime observation
+```
 
-Passed to the RAG layer through:
+### Runtime Observation
 
-observable behavior context
-Ground truth is not passed to RAG
+Passed into RAG through:
 
-The RAG system does not receive:
+```text
+behavior_context
+```
 
+### Runtime RAG
+
+Does not receive:
+
+```text
 Label
 Label_Binary
+```
 
-during the end-to-end inference path.
+### Generated Interpretation
 
-Generated output
+Uses cautious terminology such as:
 
-The system uses terms such as:
-
+```text
 candidate threat
 evidence-supported inference
 uncertainty
 analyst review
+```
 
-rather than claiming that retrieved evidence itself proves an attack occurred.
+rather than treating retrieved evidence as proof that an attack occurred.
 
-🛡️ Safety-Oriented Response Design
+---
+
+# 🛡️ Safety-Oriented Response Design
 
 The system does not blindly perform autonomous blocking.
 
-Instead, generated containment guidance is framed as:
+Containment recommendations are presented as:
 
-Hypothetical operator-reviewed containment
+> **Operator-reviewed / hypothetical containment guidance**
 
 Examples include:
 
-reviewing suspicious traffic patterns;
-applying network filtering;
-validating authentication activity;
-checking exposed services;
-strengthening segmentation;
-preserving evidence;
-monitoring related activity.
+- reviewing suspicious traffic;
+- applying network filtering;
+- validating authentication activity;
+- checking exposed services;
+- strengthening network segmentation;
+- preserving evidence;
+- monitoring related activity.
 
-This makes the architecture more suitable for analyst-assisted cybersecurity workflows.
+---
 
-🧪 Automated Testing
+# 📊 Research Experiment Matrix
 
-The project includes integration and unit tests covering:
+| Experiment | Main Question |
+|---|---|
+| Binary IDS | How well does the edge model detect attacks? |
+| Emerging IDS | How does performance change on unseen attack classes? |
+| Confidence analysis | How uncertain is the model? |
+| Calibration | Can attack probabilities be improved? |
+| Drift detection | Can changing prediction behavior be detected? |
+| Threshold analysis | What is the workload vs escalation trade-off? |
+| Routing comparison | Does routing strategy change RAG allocation? |
+| Three-system ablation | What is the contribution of selective routing? |
+| Always-RAG comparison | How much RAG workload can be avoided? |
+| Drift adaptation | Does drift provide incremental routing benefit? |
+| Emerging evidence evaluation | Does RAG retrieve relevant evidence for missed emerging attacks? |
+| Retrieval comparison | How do lexical and semantic retrieval compare? |
+| Orchestrator latency | What routing overhead is introduced? |
+| Resource evaluation | What CPU/memory behavior is observed? |
+| End-to-end evaluation | Does the complete architecture work as an integrated system? |
 
-RAG request validation;
-orchestration-to-RAG integration;
-LOCAL routing protection;
-provenance handling;
-grounded response generation;
-latency recording;
-required response fields.
+---
 
-Run:
+# 🧠 Research Findings
 
-python -m unittest discover -s tests -p "test_*.py" -v
+The current experiments reveal several important findings.
 
-Current result:
+## Finding 1 — Strong known-attack detection
 
-Ran 9 tests in 0.006s
+The binary edge model achieves very strong known-test performance:
 
-OK
+```text
+Recall = 98.90%
+F1     = 99.44%
+```
 
-✅ 9/9 tests passing
+---
 
-▶️ Running the Project
-Install core dependencies
-pip install pandas numpy scikit-learn river sentence-transformers torch transformers psutil
-1. Inspect the dataset
-python src/inspect_dataset.py
-2. Preprocess data
-python src/preprocess_data.py
-3. Verify processed data
-python src/check_processed_data.py
-4. Create known/emerging splits
-python src/split_dataset.py
-5. Train binary IDS
-python src/train_ids.py
-6. Evaluate binary IDS
-python src/evaluate_ids.py
-7. Evaluate emerging attacks
-python src/evaluate_emerging.py
-8. Analyze prediction confidence
-python src/analyze_confidence.py
-9. Calibrate attack probabilities
-python src/calibrate_model.py
-10. Train attack classifier
-python src/train_attack_classifier.py
-11. Evaluate attack classifier
-python src/evaluate_attack_classifier.py
-12. Run drift detection
-python src/detect_drift.py
-13. Run routing evaluation
-python src/evaluate_routing.py
-14. Run the complete end-to-end framework
-python src/run_end_to_end.py
-15. Evaluate RAG retrieval
-python src/evaluate_rag.py
-16. Run ablation
-python src/evaluate_ablation.py
-17. Compare Always-RAG vs Selective-RAG
-python src/evaluate_always_vs_selective_rag.py
-18. Evaluate drift adaptation
-python src/evaluate_drift_adaptation.py
-19. Evaluate emerging false-negative evidence alignment
-python src/evaluate_emerging_rag_evidence.py
-20. Run automated tests
-python -m unittest discover -s tests -p "test_*.py" -v
-📊 Research Experiments Included
+## Finding 2 — Emerging attacks remain difficult
 
-The repository contains dedicated experiments for:
+On the emerging evaluation:
 
-Experiment	Purpose
-Binary IDS evaluation	Measure known-attack detection
-Emerging attack evaluation	Measure generalization to withheld classes
-Confidence analysis	Study model uncertainty
-Probability calibration	Improve probability interpretation
-Drift detection	Detect distribution changes
-Threshold evaluation	Study confidence/RAG trade-off
-Routing-policy comparison	Compare routing strategies
-Three-system ablation	Isolate orchestration contribution
-Always-RAG comparison	Measure RAG workload savings
-Drift adaptation	Measure incremental value of drift routing
-Emerging FN evidence evaluation	Test evidence alignment for missed emerging attacks
-Retrieval comparison	Compare lexical and semantic search
-Orchestrator latency	Measure routing overhead
-Resource evaluation	Measure CPU and memory behavior
-End-to-end evaluation	Validate integrated pipeline
-📌 Reproducibility
+```text
+Recall = 34.67%
+```
 
-Controlled research experiments use:
+This demonstrates a major generalization challenge for unseen attack classes.
 
-random_state = 42
+---
 
-The end-to-end controlled evaluation uses:
+## Finding 3 — Calibration improves probability quality
 
-10,000 known
-10,000 emerging
-20,000 total
+The Brier score decreases after Isotonic Regression on validation, known-test, and emerging evaluations.
 
-The emerging classes are fixed as:
+---
 
-DNS_SPOOFING
-VULNERABILITYSCAN
-DOS-HTTP_FLOOD
+## Finding 4 — Selective RAG substantially reduces RAG workload
 
-The selected routing threshold is:
+Only:
 
-0.70
+```text
+19.71%
+```
 
-The ADWIN configuration is:
+of the controlled 20,000-sample stream required RAG.
 
-delta = 0.002
-⚠️ Limitations
+Compared with Always-RAG:
 
-This repository is a research prototype, not a production SOC platform.
+```text
+80.30%
+```
 
-1. Dataset scope
+of RAG calls were avoided.
 
-The evaluation uses CIC-IoT-2023.
+---
+
+## Finding 5 — Drift detection does not automatically imply additional routing benefit
+
+ADWIN detected the controlled transition.
+
+However:
+
+```text
+Additional unique drift-driven RAG escalations = 0
+```
+
+for the evaluated stream.
+
+---
+
+## Finding 6 — Retrieval works well on the hand-authored benchmark
+
+Both lexical and semantic retrieval achieved:
+
+```text
+Hit@1 = 1.00
+MRR    = 1.00
+```
+
+on the eight-case retrieval benchmark.
+
+---
+
+## Finding 7 — Real emerging traffic exposes a representation gap
+
+Only approximately:
+
+```text
+20.40%
+```
+
+of emerging ML false-negative RAG cases had relevant evidence within the top four retrieved items.
+
+This indicates that aggregate traffic features do not always map cleanly to cybersecurity threat-intelligence terminology.
+
+---
+
+# ⚠️ Limitations
+
+This is a **research prototype**, not a production SOC platform.
+
+## 1. Dataset Scope
+
+The evaluation uses CIC-IoT-2023 only.
 
 Cross-dataset generalization has not been established.
 
-2. Emerging-test design
+## 2. Controlled Emerging Evaluation
 
-Emerging classes are held out by class.
+Emerging attacks are held out by class.
 
-The evaluation is not claimed to represent natural chronological deployment.
+The experiment is not presented as natural chronological deployment data.
 
-3. Calibration under distribution shift
+## 3. Calibration Under Distribution Shift
 
-Calibration improves the measured Brier score but remains imperfect on emerging traffic.
+Calibration improves the measured probability quality, but uncertainty estimation remains imperfect on emerging distributions.
 
-4. Drift contribution
+## 4. Drift Contribution
 
-ADWIN detected the controlled transition, but drift generated no additional unique RAG escalations beyond confidence routing in the evaluated stream.
+The detected drift event did not generate additional unique RAG escalations beyond the confidence rule in the evaluated stream.
 
-5. Evidence alignment
+## 5. Evidence Alignment
 
-Only approximately 20.40% of the emerging ML false-negative RAG cases had relevant evidence within the top four retrieved results in the evaluated experiment.
+Only approximately 20.40% of emerging false-negative RAG cases had relevant evidence within the top four retrieved results.
 
-6. Representation gap
+## 6. Representation Gap
 
-Aggregate traffic features do not always contain enough cybersecurity-specific semantic information to retrieve the most appropriate threat-intelligence concepts.
+Aggregate network-flow features do not always contain enough cybersecurity-specific semantic information for high-quality threat-knowledge retrieval.
 
-7. Deterministic generator
+## 7. Deterministic Generator
 
-The current generator is an offline reproducible baseline and is not a production LLM.
+The current grounded generator is an offline reproducible baseline, not a production LLM.
 
-8. Retrieval benchmark size
+## 8. Retrieval Benchmark Size
 
-The lexical/semantic retrieval comparison uses eight hand-authored benchmark cases.
+The retrieval comparison uses eight hand-authored benchmark cases.
 
-Therefore those results should not be generalized to arbitrary cybersecurity queries.
+Therefore the retrieval results should not be generalized to arbitrary real-world cybersecurity queries.
 
-🔭 Future Work
+---
 
-Natural extensions of the current framework include:
+# 🔭 Future Work
 
-stronger traffic-to-cybersecurity semantic representations;
-richer behavior descriptions for retrieval;
-larger independently annotated retrieval benchmarks;
-additional IoT datasets;
-true chronological or live-stream evaluation;
-stronger adaptive threshold optimization;
-real LLM integration and evaluation;
-analyst-utility studies;
-recommendation-quality evaluation;
-deployment on constrained edge hardware;
-real-time streaming ingestion;
-production-grade vector indexing for much larger knowledge bases.
-👥 Team Contributions
+Natural extensions include:
+
+- richer traffic-to-cybersecurity semantic representations;
+- more expressive behavior descriptions for retrieval;
+- larger independently annotated retrieval benchmarks;
+- evaluation on additional IoT datasets;
+- true chronological/live-stream evaluation;
+- stronger adaptive threshold optimization;
+- real LLM adapter evaluation;
+- analyst-utility studies;
+- recommendation-quality evaluation;
+- constrained edge hardware deployment;
+- real-time traffic ingestion;
+- scalable vector indexing for larger knowledge bases.
+
+---
+
+# 👥 Team Contributions
 
 This project was developed as a three-person research collaboration.
 
-Role	Main Responsibilities
-👤 Person 1	Dataset processing, preprocessing, binary IDS, confidence/calibration, drift integration, final integration and validation
-👤 Person 2	Edge orchestration, routing policy, threshold analysis, ablation studies, latency/resource evaluation
-👤 Person 3	Cybersecurity knowledge base, provenance-aware RAG, retrieval, grounded responses, mitigation guidance, RAG evaluation
-🧠 Final Research Positioning
+| Role | Responsibilities |
+|---|---|
+| 👤 **Person 1** | Dataset processing, preprocessing, binary IDS, confidence/calibration, drift integration, final integration and validation |
+| 👤 **Person 2** | Edge orchestration, routing policy, threshold analysis, ablation studies, latency/resource evaluation |
+| 👤 **Person 3** | Cybersecurity knowledge base, provenance-aware RAG, retrieval, grounded responses, mitigation guidance, RAG evaluation |
 
-This project can be summarized as:
+---
 
-Fast detection at the edge
-            +
-Better uncertainty estimation
-            +
-Streaming drift awareness
-            +
-Selective security escalation
-            +
-Trusted cybersecurity evidence
-            +
-Grounded analyst guidance
+# 🧩 Important Design Decisions
 
-The framework does not assume that every component improves every metric.
+### Why Random Forest?
 
-Instead, it investigates whether adaptive allocation of cybersecurity reasoning can make an IoT security pipeline more resource-aware while still providing broader context for difficult cases.
+It provides a practical lightweight baseline for the first-stage edge detector and is suitable for tabular network-flow features.
 
-The experiments show:
+### Why probability calibration?
 
-Strong known-attack detection
+Routing depends on confidence. Calibration provides a better-behaved probability signal than blindly using raw classifier probabilities.
+
+### Why ADWIN?
+
+The system operates conceptually as a stream, so an online drift detector is appropriate for monitoring changing prediction behavior.
+
+### Why selective RAG?
+
+Running a broader cybersecurity reasoning layer for every traffic event defeats the resource-efficiency objective.
+
+### Why provenance?
+
+Cybersecurity recommendations should be traceable to supporting source material.
+
+### Why a deterministic generator?
+
+It provides reproducible offline experimentation while keeping the architecture ready for future real-LLM integration.
+
+---
+
+# 📌 Reproducibility
+
+Controlled experiments use:
+
+```text
+random_state = 42
+```
+
+End-to-end controlled evaluation:
+
+```text
+10,000 known
+10,000 emerging
+20,000 total
+```
+
+Emerging classes:
+
+```text
+DNS_SPOOFING
+VULNERABILITYSCAN
+DOS-HTTP_FLOOD
+```
+
+Selected routing threshold:
+
+```text
+0.70
+```
+
+ADWIN configuration:
+
+```text
+delta = 0.002
+```
+
+---
+
+# 🔐 Repository / Data Policy
+
+Large raw dataset files are excluded from GitHub.
+
+Generated model binaries are also excluded:
+
+```text
+models/*.joblib
+```
+
+Large generated experiment logs are excluded where appropriate.
+
+The repository retains:
+
+- source code;
+- evaluation scripts;
+- knowledge-base records;
+- research result summaries;
+- detailed research outputs needed for analysis;
+- automated tests.
+
+---
+
+# 🏁 Project Summary
+
+This project investigates a focused systems-research question:
+
+> **Can an IoT cybersecurity system use lightweight edge detection as its first line of defense while selectively allocating additional cybersecurity reasoning to cases where uncertainty or changing traffic conditions indicate that local inference may be insufficient?**
+
+The resulting architecture combines:
+
+```text
+Edge ML
+   +
+Probability Calibration
+   +
+Concept Drift
+   +
+Selective Orchestration
+   +
+Cybersecurity Knowledge Retrieval
+   +
+Provenance
+   +
+Grounded Recommendations
+   +
+Resource Evaluation
+```
+
+The most important outcome is not simply the combination of technologies.
+
+It is the **adaptive allocation of cybersecurity reasoning**.
+
+```text
+Fast local detection
         ↓
-Weakness on unseen attack classes
+Measure uncertainty
         ↓
-Need for additional context
+Monitor drift
         ↓
-Selective RAG instead of RAG everywhere
+Escalate selectively
         ↓
-Reduced RAG workload
+Retrieve trusted evidence
         ↓
-But also a measurable traffic-to-cybersecurity
-representation gap
+Generate grounded guidance
+```
 
-That combination of performance, efficiency, ablation, and honest failure analysis is the central research story of the project.
+At the same time, the experiments show where the current system is still limited:
 
-📎 Important Project Files
-Core Edge-AI
-src/train_ids.py
-src/evaluate_ids.py
-src/calibrate_model.py
-src/detect_drift.py
-src/orchestrator.py
-src/run_end_to_end.py
-RAG
-src/rag_request.py
-src/rag_contract.py
-src/rag_retriever.py
-src/rag_pipeline.py
-src/rag_integration.py
-src/run_rag.py
-knowledge_base/cybersecurity_sources_expanded.json
-Research Evaluation
-src/evaluate_rag.py
-src/evaluate_ablation.py
-src/evaluate_always_vs_selective_rag.py
-src/evaluate_drift_adaptation.py
-src/evaluate_emerging_rag_evidence.py
-Testing
-tests/test_rag.py
-tests/test_person2_rag_integration.py
+```text
+Strong known detection
+        ↓
+Weak unseen-attack recall
+        ↓
+Need for additional cybersecurity context
+        ↓
+Selective RAG reduces workload
+        ↓
+But traffic-to-cybersecurity semantic alignment remains challenging
+```
+
+That combination of **detection performance, resource efficiency, routing analysis, ablation, evidence evaluation, and honest failure analysis** forms the main research story of this project.
+
+---
+
 <div align="center">
-🛡️ Edge ML First. Evidence When Needed.
-Detect locally. Escalate selectively. Retrieve responsibly.
 
-IoT Security • Edge AI • Uncertainty • Concept Drift • RAG • Provenance • Cybersecurity
+# 🛡️ Edge ML First. Evidence When Needed.
 
-</div> ```
+### Detect locally. Escalate selectively. Retrieve responsibly.
+
+**IoT Security • Edge AI • Uncertainty • Concept Drift • RAG • Provenance • Cybersecurity**
+
+</div>
