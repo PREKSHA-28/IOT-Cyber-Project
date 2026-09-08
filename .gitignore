@@ -10,3 +10,6 @@ __pycache__/
 
 # Virtual environments
 .venv/
+
+# Large generated RAG evaluation log
+results/always_rag_results.csv
