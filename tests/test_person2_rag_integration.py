@@ -43,6 +43,7 @@ class Person2RagIntegrationTests(unittest.TestCase):
         )
 
         self.assertIsNotNone(rag_response)
+
         self.assertTrue(
             rag_response.response.evidence
         )
@@ -67,8 +68,24 @@ class Person2RagIntegrationTests(unittest.TestCase):
             drift_detected=True,
         )
 
+        behavior_context = {
+            "retrieval_query": (
+                "Observed IoT network behavior: "
+                "DNS, UDP, unexpected DNS responses"
+            ),
+            "active_protocols": [
+                "UDP"
+            ],
+            "active_application_protocols": [
+                "DNS"
+            ],
+            "active_tcp_flags": [],
+            "traffic_statistics": {},
+        }
+
         request = orchestrator.create_rag_request(
-            orchestration_result
+            orchestration_result,
+            behavior_context=behavior_context,
         )
 
         self.assertIsNotNone(request)
@@ -82,7 +99,13 @@ class Person2RagIntegrationTests(unittest.TestCase):
                 "confidence",
                 "drift_detected",
                 "routing_reason",
+                "behavior_context",
             },
+        )
+
+        self.assertEqual(
+            request.behavior_context,
+            behavior_context,
         )
 
         result = RAGIntegration.create(
@@ -116,7 +139,13 @@ class Person2RagIntegrationTests(unittest.TestCase):
                 "confidence",
                 "drift_detected",
                 "routing_reason",
+                "behavior_context",
             },
+        )
+
+        # behavior_context is optional for backward compatibility.
+        self.assertIsNone(
+            request.behavior_context
         )
 
         result = RAGIntegration.create(

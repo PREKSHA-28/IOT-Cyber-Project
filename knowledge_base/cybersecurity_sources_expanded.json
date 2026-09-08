@@ -1,0 +1,335 @@
+[
+  {
+    "document_id": "mitre-t1046-overview",
+    "source_name": "MITRE ATT&CK",
+    "document_title": "Network Service Discovery / Scanning (T1046) \u2014 Overview",
+    "source_url": "https://attack.mitre.org/techniques/T1046/",
+    "document_type": "attack_technique",
+    "publication_date": null,
+    "content": "Network service scanning is a discovery behavior used to identify services running on remote hosts or network devices. Common methods include port scans, vulnerability scans, and wordlist-based scans. The information can reveal reachable services and systems for later targeting. Detection should consider repeated probes across destinations, ports, timing, and the sequence of services contacted."
+  },
+  {
+    "document_id": "mitre-t1046-indicators",
+    "source_name": "MITRE ATT&CK",
+    "document_title": "Network Service Scanning (T1046) \u2014 Observable Indicators",
+    "source_url": "https://attack.mitre.org/techniques/T1046/",
+    "document_type": "detection_guidance",
+    "publication_date": null,
+    "content": "Useful indicators of network service discovery include rapid connections to multiple hosts or ports, sequential destination probing, service enumeration, and scanning utilities or scripts visible in endpoint or network telemetry. Correlating socket connections, process activity, NetFlow, or packet data over a time window can distinguish systematic reconnaissance from isolated legitimate connections."
+  },
+  {
+    "document_id": "mitre-t1046-mitigation",
+    "source_name": "MITRE ATT&CK",
+    "document_title": "Network Service Scanning (T1046) \u2014 Mitigation",
+    "source_url": "https://attack.mitre.org/techniques/T1046/",
+    "document_type": "mitigation_guidance",
+    "publication_date": null,
+    "content": "Reduce exposure to network service discovery by removing or disabling unnecessary services and ports, applying network segmentation, and using network intrusion detection or prevention capabilities to identify remote scanning. Mitigation should be matched to asset criticality and the legitimate need for reachable services."
+  },
+  {
+    "document_id": "mitre-t1046-interpretation",
+    "source_name": "MITRE ATT&CK",
+    "document_title": "Network Service Scanning (T1046) \u2014 Investigation Context",
+    "source_url": "https://attack.mitre.org/techniques/T1046/",
+    "document_type": "investigation_guidance",
+    "publication_date": null,
+    "content": "A suspected scan is stronger when probing is systematic rather than isolated. Investigators should examine source and destination addresses, destination-port diversity, scan rate, time window, repeated connection failures, and whether discovered services are followed by additional suspicious activity. A scan alone should be treated as evidence of reconnaissance, not proof of compromise."
+  },
+  {
+    "document_id": "mitre-t1557-001-overview",
+    "source_name": "MITRE ATT&CK",
+    "document_title": "Name Resolution Poisoning and SMB Relay (T1557.001) \u2014 Overview",
+    "source_url": "https://attack.mitre.org/techniques/T1557/001/",
+    "document_type": "attack_technique",
+    "publication_date": null,
+    "content": "Name resolution poisoning can involve responding to LLMNR, NBT-NS, or mDNS traffic while impersonating an authoritative source. The objective may be to redirect victims toward an adversary-controlled system and collect or relay authentication material. This behavior is associated with adversary-in-the-middle activity on local networks."
+  },
+  {
+    "document_id": "mitre-t1557-001-indicators",
+    "source_name": "MITRE ATT&CK",
+    "document_title": "Name Resolution Poisoning (T1557.001) \u2014 Indicators",
+    "source_url": "https://attack.mitre.org/techniques/T1557/001/",
+    "document_type": "detection_guidance",
+    "publication_date": null,
+    "content": "Relevant indicators include anomalous LLMNR traffic on UDP 5355, NBT-NS traffic on UDP 137, or mDNS traffic on UDP 5353 combined with suspicious responders or authentication relays. Detection can be strengthened by correlating unusual network responses with unauthorized service creation, configuration changes, or unexpected authentication attempts."
+  },
+  {
+    "document_id": "mitre-t1557-001-mitigation",
+    "source_name": "MITRE ATT&CK",
+    "document_title": "Name Resolution Poisoning (T1557.001) \u2014 Mitigation",
+    "source_url": "https://attack.mitre.org/techniques/T1557/001/",
+    "document_type": "mitigation_guidance",
+    "publication_date": null,
+    "content": "Where operationally appropriate, reduce exposure by disabling unused LLMNR, mDNS, and NetBIOS name resolution mechanisms, filtering related traffic, applying network segmentation, and using network security controls that detect adversary-in-the-middle patterns. SMB signing can help prevent certain NTLM relay scenarios."
+  },
+  {
+    "document_id": "mitre-t1557-001-caveat",
+    "source_name": "MITRE ATT&CK",
+    "document_title": "Name Resolution Poisoning (T1557.001) \u2014 Interpretation Caveat",
+    "source_url": "https://attack.mitre.org/techniques/T1557/001/",
+    "document_type": "investigation_guidance",
+    "publication_date": null,
+    "content": "Name-resolution anomalies are not by themselves confirmation of compromise. Analysts should verify whether the responding host was authorized, whether poisoned resolution changed the destination, and whether authentication or other sensitive traffic followed the anomalous response. Context and correlation are required before assigning high confidence to an attack interpretation."
+  },
+  {
+    "document_id": "mitre-t1499-002-overview",
+    "source_name": "MITRE ATT&CK",
+    "document_title": "Service Exhaustion Flood (T1499.002) \u2014 Overview",
+    "source_url": "https://attack.mitre.org/techniques/T1499/002/",
+    "document_type": "attack_technique",
+    "publication_date": "2025-10-24",
+    "content": "Service exhaustion floods target network services such as DNS and web services with requests intended to exhaust resources needed to provide the service. MITRE describes simple HTTP floods as one example, where large numbers of HTTP requests overwhelm a web server or application. The objective is degraded or unavailable service."
+  },
+  {
+    "document_id": "mitre-t1499-002-indicators",
+    "source_name": "MITRE ATT&CK",
+    "document_title": "Service Exhaustion Flood (T1499.002) \u2014 Indicators",
+    "source_url": "https://attack.mitre.org/techniques/T1499/002/",
+    "document_type": "detection_guidance",
+    "publication_date": "2025-10-24",
+    "content": "Indicators can include high-frequency repetitive service requests, excessive inbound HTTP or TLS connections, concentrated traffic from one or a small set of sources, worker-thread exhaustion, elevated CPU or memory use, and service instability. Detection should correlate request volume with resource impact instead of using volume alone."
+  },
+  {
+    "document_id": "mitre-t1499-002-mitigation",
+    "source_name": "MITRE ATT&CK",
+    "document_title": "Service Exhaustion Flood (T1499.002) \u2014 Mitigation",
+    "source_url": "https://attack.mitre.org/techniques/T1499/002/",
+    "document_type": "mitigation_guidance",
+    "publication_date": "2025-10-24",
+    "content": "Defenses include upstream filtering, rate limiting, traffic controls, and service-specific resilience measures. Depending on flood size and architecture, filtering may be performed by on-premises controls, CDNs, or specialized denial-of-service mitigation providers. Response should consider service criticality and preserve evidence for analysis."
+  },
+  {
+    "document_id": "mitre-t1499-002-http",
+    "source_name": "MITRE ATT&CK",
+    "document_title": "HTTP Floods \u2014 Service Exhaustion Context",
+    "source_url": "https://attack.mitre.org/techniques/T1499/002/",
+    "document_type": "attack_behavior",
+    "publication_date": "2025-10-24",
+    "content": "A simple HTTP flood uses request volume to exhaust the resources a web server or application needs to serve legitimate clients. An HTTP flood may therefore be visible as unusually repetitive HTTP requests, growing connection counts, increased resource use, degraded response performance, or eventual service unavailability. The behavior can occur without saturating the network link itself."
+  },
+  {
+    "document_id": "mitre-t1498-overview",
+    "source_name": "MITRE ATT&CK",
+    "document_title": "Network Denial of Service (T1498) \u2014 Overview",
+    "source_url": "https://attack.mitre.org/techniques/T1498/",
+    "document_type": "attack_technique",
+    "publication_date": "2025-10-24",
+    "content": "Network denial-of-service attacks attempt to degrade or block access to targeted resources by exhausting network bandwidth. Targets can include websites, DNS, email services, and web applications. Traffic may come from a single source or many distributed systems, and source-address spoofing may be used in some attacks."
+  },
+  {
+    "document_id": "mitre-t1498-detection",
+    "source_name": "MITRE ATT&CK",
+    "document_title": "Network Denial of Service (T1498) \u2014 Detection Context",
+    "source_url": "https://attack.mitre.org/techniques/T1498/",
+    "document_type": "detection_guidance",
+    "publication_date": "2025-10-24",
+    "content": "Investigate sudden high-volume inbound or outbound traffic, concentration toward a target service, unusual protocol or port patterns, and evidence of degraded availability. Detection can combine network volume with destination targeting and service-health signals to separate denial-of-service behavior from ordinary bursts."
+  },
+  {
+    "document_id": "mitre-t1498-mitigation",
+    "source_name": "MITRE ATT&CK",
+    "document_title": "Network Denial of Service (T1498) \u2014 Mitigation",
+    "source_url": "https://attack.mitre.org/techniques/T1498/",
+    "document_type": "mitigation_guidance",
+    "publication_date": "2025-10-24",
+    "content": "Network DoS mitigation may require upstream traffic filtering when attack volume exceeds the target link capacity. On-premises controls can block offending addresses, ports, or protocols when practical, while CDNs or specialized providers can filter traffic upstream. Plans should include business continuity and rapid escalation procedures for critical resources."
+  },
+  {
+    "document_id": "mitre-t1110-overview",
+    "source_name": "MITRE ATT&CK",
+    "document_title": "Brute Force (T1110) \u2014 Overview",
+    "source_url": "https://attack.mitre.org/techniques/T1110/",
+    "document_type": "attack_technique",
+    "publication_date": "2026-05-12",
+    "content": "Brute force techniques repeatedly guess credentials to gain access to accounts or services. Variants include password guessing, password cracking, password spraying, and credential stuffing. Activity can occur through online service interaction or offline use of previously obtained credential data."
+  },
+  {
+    "document_id": "mitre-t1110-indicators",
+    "source_name": "MITRE ATT&CK",
+    "document_title": "Brute Force (T1110) \u2014 Indicators",
+    "source_url": "https://attack.mitre.org/techniques/T1110/",
+    "document_type": "detection_guidance",
+    "publication_date": "2026-05-12",
+    "content": "Useful indicators include repeated authentication failures, repeated attempts against the same or multiple accounts, unusual authentication timing, distributed sources, and targeting patterns inconsistent with normal user behavior. Analysts should correlate failures with successful logins, source reputation, account sensitivity, and changes in access patterns."
+  },
+  {
+    "document_id": "mitre-t1110-mitigation",
+    "source_name": "MITRE ATT&CK",
+    "document_title": "Brute Force (T1110) \u2014 Defensive Context",
+    "source_url": "https://attack.mitre.org/techniques/T1110/",
+    "document_type": "mitigation_guidance",
+    "publication_date": "2026-05-12",
+    "content": "Defensive measures include authentication rate limiting, stronger authentication controls, monitoring for repeated failures, and protecting accounts and credentials. Mitigation should consider the attack variant and avoid blocking legitimate users without sufficient context."
+  },
+  {
+    "document_id": "mitre-t1210-overview",
+    "source_name": "MITRE ATT&CK",
+    "document_title": "Exploitation of Remote Services (T1210) \u2014 Overview",
+    "source_url": "https://attack.mitre.org/techniques/T1210/",
+    "document_type": "attack_technique",
+    "publication_date": "2026-08-04",
+    "content": "Adversaries may exploit vulnerabilities in remote services to gain unauthorized access or move laterally. Before exploitation, attackers may discover vulnerable services, missing patches, weak configurations, or security controls. The impact depends on the permissions and exposure of the targeted remote service."
+  },
+  {
+    "document_id": "mitre-t1210-indicators",
+    "source_name": "MITRE ATT&CK",
+    "document_title": "Exploitation of Remote Services (T1210) \u2014 Investigation",
+    "source_url": "https://attack.mitre.org/techniques/T1210/",
+    "document_type": "investigation_guidance",
+    "publication_date": "2026-08-04",
+    "content": "Investigators should correlate evidence of vulnerable or exposed services with unusual authentication, exploit-like network requests, unexpected process creation, lateral connections, or changes following a suspected exploit. Discovery activity may precede exploitation, so scanning and service-access patterns should be considered together."
+  },
+  {
+    "document_id": "mitre-t1210-mitigation",
+    "source_name": "MITRE ATT&CK",
+    "document_title": "Exploitation of Remote Services (T1210) \u2014 Mitigation",
+    "source_url": "https://attack.mitre.org/techniques/T1210/",
+    "document_type": "mitigation_guidance",
+    "publication_date": "2026-08-04",
+    "content": "Reduce exposure of remote services through patching, secure configuration, minimizing unnecessary services, access controls, and network segmentation. High-value services should be monitored for anomalous remote access and exploitation attempts. Controls should be appropriate to the service and the business need for connectivity."
+  },
+  {
+    "document_id": "owasp-command-injection-overview",
+    "source_name": "OWASP Foundation",
+    "document_title": "Command Injection \u2014 Overview",
+    "source_url": "https://owasp.org/www-community/attacks/Command_Injection",
+    "document_type": "application_security_guidance",
+    "publication_date": null,
+    "content": "Command injection occurs when an application passes attacker-controlled data to an operating-system command or shell so that unintended commands can execute. Common sources include form fields, cookies, or HTTP headers. The root cause is commonly unsafe handling of untrusted input combined with insufficient validation."
+  },
+  {
+    "document_id": "owasp-command-injection-defense",
+    "source_name": "OWASP Foundation",
+    "document_title": "Command Injection \u2014 Defensive Controls",
+    "source_url": "https://owasp.org/www-community/attacks/Command_Injection",
+    "document_type": "mitigation_guidance",
+    "publication_date": null,
+    "content": "Prefer safe APIs and avoid constructing shell commands from untrusted data. Validate and constrain inputs, apply least privilege to the affected application, and monitor attempted command execution. The goal is to prevent attacker-controlled input from becoming executable operating-system instructions."
+  },
+  {
+    "document_id": "owasp-command-injection-context",
+    "source_name": "OWASP Foundation",
+    "document_title": "Command Injection \u2014 Interpretation Context",
+    "source_url": "https://owasp.org/www-community/attacks/Command_Injection",
+    "document_type": "investigation_guidance",
+    "publication_date": null,
+    "content": "When investigating suspected command injection, examine which application input reached a command execution path, whether shell metacharacters or unexpected command arguments were accepted, and what operating-system action followed. A suspicious input string alone is not proof of successful execution; execution context and application behavior matter."
+  },
+  {
+    "document_id": "owasp-sql-injection-overview",
+    "source_name": "OWASP Foundation",
+    "document_title": "SQL Injection \u2014 Overview",
+    "source_url": "https://owasp.org/www-community/attacks/SQL_Injection",
+    "document_type": "application_security_guidance",
+    "publication_date": null,
+    "content": "SQL injection inserts SQL syntax through client-controlled input so that predefined database queries execute in unintended ways. Successful exploitation can expose, modify, or destroy data and can sometimes enable administrative database operations or access to files and operating-system functions."
+  },
+  {
+    "document_id": "owasp-sql-injection-defense",
+    "source_name": "OWASP Foundation",
+    "document_title": "SQL Injection \u2014 Defensive Controls",
+    "source_url": "https://owasp.org/www-community/attacks/SQL_Injection",
+    "document_type": "mitigation_guidance",
+    "publication_date": null,
+    "content": "Use parameterized queries and appropriate input handling to keep data separate from SQL syntax. Apply least privilege to database accounts and avoid exposing sensitive database details through application errors. Defensive design should prevent untrusted input from changing the structure or meaning of intended queries."
+  },
+  {
+    "document_id": "owasp-sql-injection-investigation",
+    "source_name": "OWASP Foundation",
+    "document_title": "SQL Injection \u2014 Investigation Context",
+    "source_url": "https://owasp.org/www-community/attacks/SQL_Injection",
+    "document_type": "investigation_guidance",
+    "publication_date": null,
+    "content": "Investigate the application request, the affected query path, database error behavior, and any unexpected read, write, administrative, or file-access effects. Repeated unusual input should be correlated with database logs and application responses. Suspicious input is evidence for investigation, not automatic proof of successful exploitation."
+  },
+  {
+    "document_id": "nist-iot-8259a-capabilities",
+    "source_name": "National Institute of Standards and Technology",
+    "document_title": "IoT Device Cybersecurity Capability Core Baseline",
+    "source_url": "https://doi.org/10.6028/NIST.IR.8259A",
+    "document_type": "iot_security_guidance",
+    "publication_date": "2020-05",
+    "content": "The IoT device cybersecurity capability baseline identifies capabilities supporting device identification, configuration, data protection, logical access control, software update, and cybersecurity state awareness. These capabilities help operators understand device state, reduce exposure, and manage connected-device security."
+  },
+  {
+    "document_id": "nist-ir-8259r1-foundational",
+    "source_name": "National Institute of Standards and Technology",
+    "document_title": "Foundational Cybersecurity Activities for IoT Product Manufacturers (IR 8259 Rev. 1)",
+    "source_url": "https://csrc.nist.gov/pubs/ir/8259/r1/final",
+    "document_type": "iot_security_guidance",
+    "publication_date": "2026-04",
+    "content": "NIST IR 8259 Rev. 1 describes foundational cybersecurity activities IoT product manufacturers should consider before products are sold. The guidance emphasizes improving IoT product securability and providing cybersecurity functionality and information that help customers reduce the likelihood and impact of compromise."
+  },
+  {
+    "document_id": "nist-iot-state-awareness",
+    "source_name": "National Institute of Standards and Technology",
+    "document_title": "IoT Security \u2014 Device State Awareness and Updates",
+    "source_url": "https://doi.org/10.6028/NIST.IR.8259A",
+    "document_type": "iot_security_guidance",
+    "publication_date": "2020-05",
+    "content": "IoT security programs benefit from visibility into device cybersecurity state, secure software-update capability, controlled configuration, and logical access management. These capabilities help maintain trustworthy device operation and make it easier to investigate suspicious behavior or restore devices after incidents."
+  },
+  {
+    "document_id": "nist-sp-800-61r3-response",
+    "source_name": "National Institute of Standards and Technology",
+    "document_title": "Incident Response Recommendations and Considerations (SP 800-61 Rev. 3)",
+    "source_url": "https://csrc.nist.gov/pubs/sp/800/61/r3/final",
+    "document_type": "incident_response_guidance",
+    "publication_date": "2025-04",
+    "content": "NIST SP 800-61 Rev. 3 provides incident-response recommendations within cybersecurity risk management and the NIST Cybersecurity Framework 2.0. It emphasizes preparing for incidents, reducing their impact, and improving the efficiency and effectiveness of detection, response, and recovery activities."
+  },
+  {
+    "document_id": "nist-sp-800-61r3-analysis",
+    "source_name": "National Institute of Standards and Technology",
+    "document_title": "Incident Response \u2014 Analysis and Evidence Handling",
+    "source_url": "https://csrc.nist.gov/pubs/sp/800/61/r3/final",
+    "document_type": "incident_response_guidance",
+    "publication_date": "2025-04",
+    "content": "Incident response should support disciplined analysis and decision-making based on available evidence and organizational risk. Investigation and response actions should avoid destroying information needed for later analysis, and response decisions should be appropriate to the severity and operational context of the incident."
+  },
+  {
+    "document_id": "nist-sp-800-61r3-containment",
+    "source_name": "National Institute of Standards and Technology",
+    "document_title": "Incident Response \u2014 Containment and Recovery",
+    "source_url": "https://csrc.nist.gov/pubs/sp/800/61/r3/final",
+    "document_type": "incident_response_guidance",
+    "publication_date": "2025-04",
+    "content": "Containment and recovery actions should be chosen according to incident characteristics, business impact, and organizational priorities. Security teams should balance rapid risk reduction with evidence preservation and operational continuity, and should document decisions for later analysis and improvement."
+  },
+  {
+    "document_id": "cisa-ddos-overview",
+    "source_name": "Cybersecurity and Infrastructure Security Agency",
+    "document_title": "Understanding Denial-of-Service Attacks",
+    "source_url": "https://www.cisa.gov/news-events/news/understanding-denial-service-attacks",
+    "document_type": "threat_guidance",
+    "publication_date": null,
+    "content": "Denial-of-service attacks seek to make services unavailable by exhausting resources or bandwidth. Defensive planning can include traffic monitoring, filtering, rate limiting, resilient service capacity, and coordination with service providers. Response should be aligned with the importance of the affected service and the scale of the attack."
+  },
+  {
+    "document_id": "cwe-798-overview",
+    "source_name": "MITRE CWE",
+    "document_title": "Use of Hard-coded Credentials (CWE-798)",
+    "source_url": "https://cwe.mitre.org/data/definitions/798.html",
+    "document_type": "weakness_guidance",
+    "publication_date": null,
+    "content": "Hard-coded credentials create risk when secrets are embedded in software or device configurations and can be exposed or reused. Suspected compromise should trigger credential rotation or replacement, while long-term defenses should use protected secret-management mechanisms and appropriate access controls."
+  },
+  {
+    "document_id": "owasp-dos-overview",
+    "source_name": "OWASP Foundation",
+    "document_title": "Denial of Service Cheat Sheet \u2014 Overview",
+    "source_url": "https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html",
+    "document_type": "application_security_guidance",
+    "publication_date": null,
+    "content": "OWASP treats denial of service as an availability problem that can arise at application, infrastructure, or network layers. Resilience requires analysis of system architecture, functionality, and performance rather than reliance on a single anti-DoS control."
+  },
+  {
+    "document_id": "owasp-dos-controls",
+    "source_name": "OWASP Foundation",
+    "document_title": "Denial of Service \u2014 Defensive Design",
+    "source_url": "https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html",
+    "document_type": "mitigation_guidance",
+    "publication_date": null,
+    "content": "Application and infrastructure defenses should consider request and resource limits, rate controls, architectural capacity, and monitoring. Controls should be selected according to where resources can be exhausted and how the application behaves under abnormal demand. Layered defenses are preferable to assuming one mechanism can stop every DoS scenario."
+  }
+]

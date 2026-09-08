@@ -1,0 +1,41 @@
+{
+  "corpus_file": "C:\\Users\\Preksha Vishwanath\\Desktop\\IOT_Cyber_Project\\knowledge_base\\cybersecurity_sources_expanded.json",
+  "corpus_size": 37,
+  "evaluation_cases": 8,
+  "retrieval_top_k": 4,
+  "mode_comparison": {
+    "lexical": {
+      "cases": 8,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "hit_at_4": 1,
+      "mean_reciprocal_rank": 1.0,
+      "mean_precision_at_1": 1.0,
+      "mean_precision_at_3": 0.9166666666666666,
+      "mean_precision_at_4": 0.8125,
+      "mean_recall_at_4": 0.8125,
+      "mean_ndcg_at_4": 0.9252553844651816,
+      "mean_retrieval_latency_ms": 0.09871249494608492,
+      "cold_start_latency_ms": 0.5175999831408262,
+      "warm_mean_retrieval_latency_ms": 0.038871425203979015,
+      "mean_relevant_items_retrieved": 3.25
+    },
+    "semantic": {
+      "cases": 8,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "hit_at_4": 1,
+      "mean_reciprocal_rank": 1.0,
+      "mean_precision_at_1": 1.0,
+      "mean_precision_at_3": 0.8333333333333333,
+      "mean_precision_at_4": 0.71875,
+      "mean_recall_at_4": 0.75,
+      "mean_ndcg_at_4": 0.8596894124609581,
+      "mean_retrieval_latency_ms": 1212.5067000160925,
+      "cold_start_latency_ms": 9610.18190003233,
+      "warm_mean_retrieval_latency_ms": 12.83881429948711,
+      "mean_relevant_items_retrieved": 2.875
+    }
+  },
+  "evaluation_scope": "Eight hand-authored threat-behavior queries evaluated against relevance groups in the expanded versioned cybersecurity corpus. A retrieved item is considered relevant when it belongs to the predefined evidence group for that threat/topic. This is a retrieval benchmark, not a CIC-IoT-2023 attack-classification result."
+}

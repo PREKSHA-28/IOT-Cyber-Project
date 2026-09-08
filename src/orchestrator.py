@@ -113,10 +113,15 @@ class EdgeOrchestrator:
     def create_rag_request(
         self,
         result: OrchestrationResult,
+        behavior_context: Dict[str, Any] | None = None,
     ):
         """
         Convert a RAG routing decision into a structured
         RAG request for the RAG/LLM layer.
+
+        behavior_context contains only observable network
+        behavior derived from the input sample. The ground-truth
+        label is never passed into the RAG layer.
         """
 
         if result.routing_decision != "RAG":
@@ -129,6 +134,7 @@ class EdgeOrchestrator:
             confidence=result.confidence,
             drift_detected=result.drift_detected,
             routing_reason=result.routing_reason,
+            behavior_context=behavior_context,
         )
 
 

@@ -17,6 +17,7 @@ class RAGRequest:
     confidence: float
     drift_detected: bool
     routing_reason: str
+    behavior_context: Dict[str, Any] | None = None
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert the request into a dictionary."""
@@ -31,6 +32,7 @@ def create_rag_request(
     confidence: float,
     drift_detected: bool,
     routing_reason: str,
+    behavior_context: Dict[str, Any] | None = None,
 ) -> RAGRequest:
     """
     Create the structured RAG request that Person 3's
@@ -46,4 +48,5 @@ def create_rag_request(
         confidence=float(confidence),
         drift_detected=bool(drift_detected),
         routing_reason=routing_reason,
+        behavior_context=behavior_context,
     )

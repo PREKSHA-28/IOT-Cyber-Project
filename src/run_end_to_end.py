@@ -1,26 +1,26 @@
-"""
+﻿"""
 Run the complete IoT cybersecurity pipeline end-to-end.
 
 Pipeline:
 
     Random Forest
-        ↓
+        |
     Probability calibration
-        ↓
+        |
     Confidence
-        ↓
+        |
     ADWIN drift detection
-        ↓
+        |
     Person 2 EdgeOrchestrator
-        ↓
+        |
     LOCAL or RAG
-        ↓
+        |
     Person 3 RAGIntegration
-        ↓
+        |
     Provenance-aware RAG response
 """
-
 from __future__ import annotations
+
 
 from pathlib import Path
 
@@ -120,6 +120,137 @@ def prepare_features(
     return df[
         feature_columns
     ].copy()
+
+
+def build_behavior_context(
+    row: pd.Series,
+) -> dict[str, object]:
+    """
+    Build a compact, label-free representation of observable
+    network behavior for the RAG layer.
+
+    The ground-truth Label and Label_Binary columns are deliberately
+    excluded so that RAG cannot access the evaluation answer.
+    """
+
+    protocol_features = [
+        "TCP",
+        "UDP",
+        "ARP",
+        "ICMP",
+        "IGMP",
+        "IPv",
+        "LLC",
+    ]
+
+    application_features = [
+        "HTTP",
+        "HTTPS",
+        "DNS",
+        "Telnet",
+        "SMTP",
+        "SSH",
+        "IRC",
+        "DHCP",
+    ]
+
+    tcp_flag_features = [
+        "fin_flag_number",
+        "syn_flag_number",
+        "rst_flag_number",
+        "psh_flag_number",
+        "ack_flag_number",
+        "ece_flag_number",
+        "cwr_flag_number",
+    ]
+
+    traffic_features = [
+        "Rate",
+        "Number",
+        "Tot size",
+        "IAT",
+        "Header_Length",
+        "Min",
+        "Max",
+        "AVG",
+        "Std",
+        "Variance",
+    ]
+
+    def active_features(
+        feature_names: list[str],
+    ) -> list[str]:
+        active = []
+
+        for feature in feature_names:
+            if feature not in row.index:
+                continue
+
+            try:
+                value = float(row[feature])
+            except (TypeError, ValueError):
+                continue
+
+            if value > 0:
+                active.append(feature)
+
+        return active
+
+    def numeric_snapshot(
+        feature_names: list[str],
+    ) -> dict[str, float]:
+        snapshot = {}
+
+        for feature in feature_names:
+            if feature not in row.index:
+                continue
+
+            try:
+                value = float(row[feature])
+            except (TypeError, ValueError):
+                continue
+
+            snapshot[feature] = round(value, 6)
+
+        return snapshot
+
+    active_protocols = active_features(
+        protocol_features
+    )
+
+    active_application_protocols = active_features(
+        application_features
+    )
+
+    active_tcp_flags = active_features(
+        tcp_flag_features
+    )
+
+    behavior_terms = (
+        active_protocols
+        + active_application_protocols
+        + active_tcp_flags
+    )
+
+    if not behavior_terms:
+        behavior_terms = ["network traffic"]
+
+    retrieval_query = (
+        "Observed IoT network behavior: "
+        + ", ".join(behavior_terms)
+    )
+
+    return {
+        "retrieval_query": retrieval_query,
+        "active_protocols": active_protocols,
+        "active_application_protocols": (
+            active_application_protocols
+        ),
+        "active_tcp_flags": active_tcp_flags,
+        "traffic_statistics": numeric_snapshot(
+            traffic_features
+        ),
+    }
 
 
 # ============================================================
@@ -498,10 +629,17 @@ def main() -> None:
             == "RAG"
         ):
 
+            sample_row = stream_df.iloc[index]
+
+            behavior_context = build_behavior_context(
+                sample_row
+            )
+
             rag_response = (
                 rag_layer.run_orchestration_result(
                     orchestrator,
                     orchestration_result,
+                    behavior_context=behavior_context,
                 )
             )
 
@@ -550,6 +688,10 @@ def main() -> None:
                     "evidence_count": len(
                         rag_response.response
                         .evidence
+                    ),
+                    "retrieved_evidence_ids": "|".join(
+                        evidence.evidence_id
+                        for evidence in rag_response.response.evidence
                     ),
                 }
             )
